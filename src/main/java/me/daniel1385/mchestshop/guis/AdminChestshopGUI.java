@@ -121,7 +121,7 @@ public class AdminChestshopGUI extends InventoryGUI {
 				return;
 			}
 			double betrag = price * anzahl;
-			if(!MoneyAPI.removeMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ")" + anzahl + "x")) {
+			if(!MoneyAPI.removeMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ") " + anzahl + "x")) {
 				paramPlayer.sendMessage(plugin.getPrefix() + "§cDu hast nicht genug Geld!");
 				return;
 			}
@@ -152,7 +152,7 @@ public class AdminChestshopGUI extends InventoryGUI {
 				}
 			}
 			double betrag = price * anzahl;
-			MoneyAPI.addMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ")" + anzahl + "x");
+			MoneyAPI.addMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ") " + anzahl + "x");
 			Bukkit.broadcast(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*item.getAmount() + " Stück §7von §6" + desc + " §7verkauft (§c-" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + economy + "§7).", "chestshop.admin");
 		}
 	}

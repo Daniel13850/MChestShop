@@ -130,7 +130,7 @@ public class ChestShopGUI extends InventoryGUI {
 					return;
 				}
 				double betrag = price * anzahl;
-				if(!MoneyAPI.removeMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ")" + anzahl + "x")) {
+				if(!MoneyAPI.removeMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ") " + anzahl + "x")) {
 					paramPlayer.sendMessage(plugin.getPrefix() + "§cDu hast nicht genug Geld!");
 					return;
 				}
@@ -143,7 +143,7 @@ public class ChestShopGUI extends InventoryGUI {
 					paramPlayer.getInventory().addItem(neu);
 				}
 				if(!usebank) {
-					MoneyAPI.addMoney(UUID.fromString(owner), betrag, "Eigener ChestShop #" + id + " (" + desc + ")" + anzahl + "x" + "(" + paramPlayer.getUniqueId().toString() + ")");
+					MoneyAPI.addMoney(UUID.fromString(owner), betrag, "Eigener ChestShop #" + id + " (" + desc + ") " + anzahl + "x" + " (" + paramPlayer.getUniqueId().toString() + ")");
 				} else {
 					mysql.setBank(UUID.fromString(owner), mysql.getBank(UUID.fromString(owner)) + betrag);
 				}
@@ -163,7 +163,7 @@ public class ChestShopGUI extends InventoryGUI {
 				}
 				double betrag = price * anzahl;
 				if(!usebank) {
-					if(!MoneyAPI.removeMoney(UUID.fromString(owner), betrag, "Eigener ChestShop #" + id + " (" + desc + ")" + anzahl + "x" + "(" + paramPlayer.getUniqueId().toString() + ")")) {
+					if(!MoneyAPI.removeMoney(UUID.fromString(owner), betrag, "Eigener ChestShop #" + id + " (" + desc + ") " + anzahl + "x" + " (" + paramPlayer.getUniqueId().toString() + ")")) {
 						paramPlayer.sendMessage(plugin.getPrefix() + "§cDer Besitzer hat nicht genug Geld!");
 						return;
 					}
@@ -192,7 +192,7 @@ public class ChestShopGUI extends InventoryGUI {
 					}
 				}
 				ContainerAPI.addItems(chestLoc, new ItemStack(item), entfernen);
-				MoneyAPI.addMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ")" + anzahl + "x");
+				MoneyAPI.addMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ") " + anzahl + "x");
 				Player powner = Bukkit.getPlayer(UUID.fromString(owner));
 				if(powner != null) {
 					powner.sendMessage(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*item.getAmount() + " Stück §7von §6" + desc + " §7verkauft (§c-" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + economy + "§7).");

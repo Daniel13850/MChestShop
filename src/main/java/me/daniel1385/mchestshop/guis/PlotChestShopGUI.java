@@ -61,14 +61,14 @@ public class PlotChestShopGUI extends InventoryGUI {
 				paramPlayer.sendMessage(plugin.getPrefix() + "§cDu kannst keine weiteren Grundstücke besitzen!");
 				return;
 			}
-			if(!MoneyAPI.removeMoney(paramPlayer.getUniqueId(), price, "ChestShop Nutzung #" + id + " (" + desc + ")" + 1 + "x")) {
+			if(!MoneyAPI.removeMoney(paramPlayer.getUniqueId(), price, "ChestShop Nutzung #" + id + " (" + desc + ") " + 1 + "x")) {
 				paramPlayer.sendMessage(plugin.getPrefix() + "§cDu hast nicht genug Geld!");
 				return;
 			}
 			plot.setOwner(paramPlayer.getUniqueId());
 			Player powner = Bukkit.getPlayer(UUID.fromString(owner));
 			if(!usebank) {
-				MoneyAPI.addMoney(UUID.fromString(owner), price, "Eigener ChestShop #" + id + " (" + desc + ")" + 1 + "x" + "(" + paramPlayer.getUniqueId().toString() + ")");
+				MoneyAPI.addMoney(UUID.fromString(owner), price, "Eigener ChestShop #" + id + " (" + desc + ") " + 1 + "x" + " (" + paramPlayer.getUniqueId().toString() + ")");
 			} else {
 				mysql.setBank(UUID.fromString(owner), mysql.getBank(UUID.fromString(owner)) + price);
 			}
