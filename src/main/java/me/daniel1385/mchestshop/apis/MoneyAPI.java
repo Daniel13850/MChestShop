@@ -23,12 +23,22 @@ public class MoneyAPI {
 
     public static void addMoney(UUID uuid, double value, String reason) {
         Economy econ = getEconomy();
-        econ.depositPlayer(Bukkit.getOfflinePlayer(uuid), value);
+        if(econ.getName().equals("MoneySystem")) {
+            me.daniel1385.moneysystem.apis.CustomEconomy becon = (me.daniel1385.moneysystem.apis.CustomEconomy) econ;
+            becon.depositPlayer(uuid, value, reason);
+        } else {
+            econ.depositPlayer(Bukkit.getOfflinePlayer(uuid), value);
+        }
     }
 
     public static boolean removeMoney(UUID uuid, double value, String reason) {
         Economy econ = getEconomy();
-        return econ.withdrawPlayer(Bukkit.getOfflinePlayer(uuid), value).transactionSuccess();
+        if(econ.getName().equals("MoneySystem")) {
+            me.daniel1385.moneysystem.apis.CustomEconomy becon = (me.daniel1385.moneysystem.apis.CustomEconomy) econ;
+            return becon.withdrawPlayer(uuid, value, reason).transactionSuccess();
+        } else {
+            return econ.withdrawPlayer(Bukkit.getOfflinePlayer(uuid), value).transactionSuccess();
+        }
     }
 
     public static void setMoney(UUID uuid, double value, String reason) {

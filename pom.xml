@@ -103,6 +103,12 @@
             <artifactId>UltraBarrels</artifactId>
             <version>1.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.Daniel13850</groupId>
+            <artifactId>MoneySystem</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
 </project>
