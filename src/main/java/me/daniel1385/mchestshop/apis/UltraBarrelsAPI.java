@@ -4,21 +4,22 @@ import me.daniel1385.ultrabarrels.UltraBarrels;
 import me.daniel1385.ultrabarrels.objects.LagerData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Barrel;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
 public class UltraBarrelsAPI {
 
-    public static boolean isLager(Location loc) {
+    public static boolean isLager(Barrel barrel) {
         UltraBarrels plugin = (UltraBarrels) Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        LagerData data = plugin.getLager(loc);
+        LagerData data = plugin.getLager(barrel);
         return data != null;
     }
 
-    public static ItemStack getLagerItem(Location loc) {
+    public static ItemStack getLagerItem(Barrel barrel) {
         UltraBarrels plugin = (UltraBarrels) Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        LagerData data = plugin.getLager(loc);
+        LagerData data = plugin.getLager(barrel);
         if(data != null) {
             return data.getItem();
         } else {
@@ -26,9 +27,9 @@ public class UltraBarrelsAPI {
         }
     }
 
-    public static long getLagerAmount(Location loc) {
+    public static long getLagerAmount(Barrel barrel) {
         UltraBarrels plugin = (UltraBarrels) Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        LagerData data = plugin.getLager(loc);
+        LagerData data = plugin.getLager(barrel);
         if(data != null) {
             return data.getAmount();
         } else {
@@ -36,24 +37,24 @@ public class UltraBarrelsAPI {
         }
     }
 
-    public static List<ItemStack> removeLager(Location loc, int amount) {
+    public static List<ItemStack> removeLager(Barrel barrel, int amount) {
         UltraBarrels plugin = (UltraBarrels) Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        return plugin.removeLager(loc, amount);
+        return plugin.removeLager(barrel, amount);
     }
 
-    public static boolean removeLager(Location loc, ItemStack stack, int amount) {
+    public static boolean removeLager(Barrel barrel, ItemStack stack, int amount) {
         UltraBarrels plugin = (UltraBarrels) Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        return plugin.removeLager(loc, stack, amount);
+        return plugin.removeLager(barrel, stack, amount);
     }
 
-    public static boolean addLager(Location loc, ItemStack item) {
+    public static boolean addLager(Barrel barrel, ItemStack item) {
         UltraBarrels plugin = (UltraBarrels) Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        return plugin.addLager(loc, item);
+        return plugin.addLager(barrel, item);
     }
 
-    public static boolean addLager(Location loc, ItemStack item, int amount) {
+    public static boolean addLager(Barrel barrel, ItemStack item, int amount) {
         UltraBarrels plugin = (UltraBarrels) Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        return plugin.addLager(loc, item, amount);
+        return plugin.addLager(barrel, item, amount);
     }
 
 }

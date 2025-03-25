@@ -2,6 +2,7 @@ package me.daniel1385.mchestshop.apis;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Barrel;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.DoubleChest;
@@ -16,16 +17,18 @@ public class ContainerAPI {
         if(container == null) {
             return 0;
         }
-        Plugin ubarrels = Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        if(ubarrels != null) {
-            if (UltraBarrelsAPI.isLager(loc)) {
-                ItemStack da = UltraBarrelsAPI.getLagerItem(loc);
-                if (da != null) {
-                    if (!da.isSimilar(stack)) {
-                        return 0;
+        if(container instanceof Barrel barrel) {
+            Plugin ubarrels = Bukkit.getPluginManager().getPlugin("UltraBarrels");
+            if (ubarrels != null) {
+                if (UltraBarrelsAPI.isLager(barrel)) {
+                    ItemStack da = UltraBarrelsAPI.getLagerItem(barrel);
+                    if (da != null) {
+                        if (!da.isSimilar(stack)) {
+                            return 0;
+                        }
                     }
+                    return Integer.MAX_VALUE;
                 }
-                return Integer.MAX_VALUE;
             }
         }
         return checkInvSpace(stack, container.getInventory().getStorageContents());
@@ -36,20 +39,22 @@ public class ContainerAPI {
         if(container == null) {
             return 0;
         }
-        Plugin ubarrels = Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        if(ubarrels != null) {
-            if (UltraBarrelsAPI.isLager(loc)) {
-                ItemStack da = UltraBarrelsAPI.getLagerItem(loc);
-                if (da != null) {
-                    if (da.isSimilar(stack)) {
-                        long amount = UltraBarrelsAPI.getLagerAmount(loc);
-                        if (amount > Integer.MAX_VALUE) {
-                            return Integer.MAX_VALUE;
+        if(container instanceof Barrel barrel) {
+            Plugin ubarrels = Bukkit.getPluginManager().getPlugin("UltraBarrels");
+            if (ubarrels != null) {
+                if (UltraBarrelsAPI.isLager(barrel)) {
+                    ItemStack da = UltraBarrelsAPI.getLagerItem(barrel);
+                    if (da != null) {
+                        if (da.isSimilar(stack)) {
+                            long amount = UltraBarrelsAPI.getLagerAmount(barrel);
+                            if (amount > Integer.MAX_VALUE) {
+                                return Integer.MAX_VALUE;
+                            }
+                            return (int) amount;
                         }
-                        return (int) amount;
                     }
+                    return 0;
                 }
-                return 0;
             }
         }
         return checkInvItems(stack, container.getInventory().getStorageContents());
@@ -60,10 +65,12 @@ public class ContainerAPI {
         if(container == null) {
             return false;
         }
-        Plugin ubarrels = Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        if(ubarrels != null) {
-            if (UltraBarrelsAPI.isLager(loc)) {
-                return UltraBarrelsAPI.removeLager(loc, stack, anzahl);
+        if(container instanceof Barrel barrel) {
+            Plugin ubarrels = Bukkit.getPluginManager().getPlugin("UltraBarrels");
+            if (ubarrels != null) {
+                if (UltraBarrelsAPI.isLager(barrel)) {
+                    return UltraBarrelsAPI.removeLager(barrel, stack, anzahl);
+                }
             }
         }
         int amount = anzahl;
@@ -120,10 +127,12 @@ public class ContainerAPI {
         if(container == null) {
             return false;
         }
-        Plugin ubarrels = Bukkit.getPluginManager().getPlugin("UltraBarrels");
-        if(ubarrels != null) {
-            if (UltraBarrelsAPI.isLager(loc)) {
-                return UltraBarrelsAPI.addLager(loc, stack, anzahl);
+        if(container instanceof Barrel barrel) {
+            Plugin ubarrels = Bukkit.getPluginManager().getPlugin("UltraBarrels");
+            if (ubarrels != null) {
+                if (UltraBarrelsAPI.isLager(barrel)) {
+                    return UltraBarrelsAPI.addLager(barrel, stack, anzahl);
+                }
             }
         }
         int amount = anzahl;

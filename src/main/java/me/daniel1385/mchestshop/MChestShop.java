@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 public class MChestShop extends JavaPlugin {
 	private String prefix;
+	private MySQL mysql;
 
 	@Override
 	public void onEnable() {
@@ -48,7 +49,6 @@ public class MChestShop extends JavaPlugin {
 		prefix = translateAllCodes(config.getString("prefix")) + "§r";
 		boolean usemysql = config.getBoolean("mysql.use");
 		boolean usebank = config.getBoolean("enable-offline-bank");
-		MySQL mysql;
 		if(usemysql) {
 			mysql = new MySQL(config.getString("mysql.host"), config.getInt("mysql.port"), config.getString("mysql.database"), config.getString("mysql.username"), config.getString("mysql.password"), config.getString("mysql.prefix"));
 		} else {
@@ -73,6 +73,15 @@ public class MChestShop extends JavaPlugin {
 		getCommand("cbank").setExecutor(new CBankCommand(mysql, usebank, this));
 		Metrics metrics = new Metrics(this, 24660);
 	}
+
+	@Override
+	public void onDisable() {
+        try {
+            mysql.disconnect();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
 	public String getPrefix() {
 		return prefix;

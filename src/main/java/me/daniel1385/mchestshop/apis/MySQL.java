@@ -25,9 +25,9 @@ public class MySQL
 	private String db = null;
 	private String user = null;
 	private String pass = null;
-	private Connection con;
 	private String prefix = null;
 	private String file = null;
+	private Connection con;
 
 	public MySQL(String host, int port, String db, String user, String pass, String prefix) {
 		this.host = host;
@@ -43,35 +43,33 @@ public class MySQL
 		this.prefix = "";
 	}
 
+	private void connect() throws SQLException {
+		if (con == null || con.isClosed()) {
+			if (file == null) {
+				con = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.db, this.user, this.pass);
+			} else {
+				con = DriverManager.getConnection("jdbc:sqlite:" + this.file);
+			}
+		}
+	}
+
 	public double getBank(UUID uuid) throws SQLException {
 		connect();
-		ResultSet set = this.con.prepareStatement("SELECT * FROM `" + prefix + "chestshop_bank` WHERE `uuid`='" + uuid.toString() + "'").executeQuery();
+		ResultSet set = con.prepareStatement("SELECT * FROM `" + prefix + "chestshop_bank` WHERE `uuid`='" + uuid.toString() + "'").executeQuery();
 		if(set.next()) {
-			double result = set.getDouble("money");
-			disconnect();
-			return result;
+            return set.getDouble("money");
 		} else {
-			disconnect();
 			return 0;
 		}
 	}
 
 	public void setBank(UUID uuid, double money) throws SQLException {
 		connect();
-		ResultSet set = this.con.prepareStatement("SELECT * FROM `" + prefix + "chestshop_bank` WHERE `uuid`='" + uuid.toString() + "'").executeQuery();
+		ResultSet set = con.prepareStatement("SELECT * FROM `" + prefix + "chestshop_bank` WHERE `uuid`='" + uuid.toString() + "'").executeQuery();
 		if(set.next()) {
-			this.con.prepareStatement("UPDATE `" + prefix + "chestshop_bank` SET `money` = '" + money + "' WHERE `uuid`='" + uuid.toString() + "';").execute();
+			con.prepareStatement("UPDATE `" + prefix + "chestshop_bank` SET `money` = '" + money + "' WHERE `uuid`='" + uuid.toString() + "';").execute();
 		} else {
 			con.prepareStatement("INSERT INTO `" + prefix + "chestshop_bank` (`uuid`, `money`) VALUES ('" + uuid.toString() + "', '" + money + "')").execute();
-		}
-		disconnect();
-	}
-
-	private void connect() throws SQLException {
-		if(file == null) {
-			this.con = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.db, this.user, this.pass);
-		} else {
-			this.con = DriverManager.getConnection("jdbc:sqlite:" + this.file);
 		}
 	}
 
@@ -82,10 +80,10 @@ public class MySQL
 		} else {
 			con.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "chestshops` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `owner` varchar(36) NOT NULL, `sign_world` text NOT NULL, `sign_x` int(11) NOT NULL, `sign_y` int(11) NOT NULL, `sign_z` int(11) NOT NULL, `chest_world` text DEFAULT NULL, `chest_x` int(11) DEFAULT NULL, `chest_y` int(11) DEFAULT NULL, `chest_z` int(11) DEFAULT NULL, `item` text DEFAULT NULL, `mode` int(11) NOT NULL, `price` double NOT NULL, `description` text NOT NULL, `rank` text DEFAULT NULL, `delay` int(11) DEFAULT NULL);").execute();
 		}
+		con.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "freeshop_uses` (`id` varchar(50) PRIMARY KEY, `time` BIGINT NOT NULL);").execute();
 		if(bank) {
 			con.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "chestshop_bank` (`uuid` varchar(36) PRIMARY KEY NOT NULL, `money` double NOT NULL);").execute();
 		}
-		disconnect();
     }
 	
 	public int createChestShop(UUID uuid, Location sign, Location chest, ItemStack item, int mode, double price, String desc) throws Exception {
@@ -107,9 +105,7 @@ public class MySQL
 		stat.execute();
 		ResultSet set = stat.getGeneratedKeys();
 		set.next();
-		int result = set.getInt(1);
-		disconnect();
-		return result;
+        return set.getInt(1);
 	}
 
 	public int createFreeShop(UUID uuid, Location sign, Location chest, ItemStack item, int mode, String rank, int time, String desc) throws Exception {
@@ -133,10 +129,7 @@ public class MySQL
 		stat.execute();
 		ResultSet set = stat.getGeneratedKeys();
 		set.next();
-		int result = set.getInt(1);
-		con.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "freeshop_uses` (`id` varchar(50) PRIMARY KEY, `time` BIGINT NOT NULL);").execute();
-		disconnect();
-		return result;
+        return set.getInt(1);
 	}
 	
 	public int createAdminChestShop(UUID uuid, Location sign, ItemStack item, int mode, double price, String desc) throws Exception {
@@ -154,9 +147,7 @@ public class MySQL
 		stat.execute();
 		ResultSet set = stat.getGeneratedKeys();
 		set.next();
-		int result = set.getInt(1);
-		disconnect();
-		return result;
+        return set.getInt(1);
 	}
 
 	public int createAdminFreeShop(UUID uuid, Location sign, ItemStack item, int mode, String rank, int time, String desc) throws Exception {
@@ -176,10 +167,7 @@ public class MySQL
 		stat.execute();
 		ResultSet set = stat.getGeneratedKeys();
 		set.next();
-		int result = set.getInt(1);
-		con.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "freeshop_uses` (`id` varchar(50) PRIMARY KEY, `time` BIGINT NOT NULL);").execute();
-		disconnect();
-		return result;
+        return set.getInt(1);
 	}
 
 	public long getRestTime(UUID uuid, int id) throws SQLException {
@@ -190,19 +178,15 @@ public class MySQL
 		ResultSet set = stat.executeQuery();
 		if(set.next()) {
 			if(delay < 0) {
-				disconnect();
 				return -1;
 			}
 			long time = set.getLong("time");
 			long now = System.currentTimeMillis();
 			if(now >= time + delay) {
-				disconnect();
 				return 0;
 			}
-			disconnect();
 			return (time + delay - now);
 		}
-		disconnect();
 		return 0;
 	}
 
@@ -220,7 +204,6 @@ public class MySQL
 		stat.setString(1, uuid.toString() + "_" + id);
 		stat.setLong(2, System.currentTimeMillis());
 		stat.execute();
-		disconnect();
 		return getFreeShopDelay(id);
 	}
 	
@@ -238,9 +221,7 @@ public class MySQL
 		stat.execute();
 		ResultSet set = stat.getGeneratedKeys();
 		set.next();
-		int result = set.getInt(1);
-		disconnect();
-		return result;
+        return set.getInt(1);
 	}
 	
 	private String toString(ItemStack stack) throws Exception {
@@ -265,10 +246,8 @@ public class MySQL
 		stat.setInt(1, id);
 		ResultSet set = stat.executeQuery();
 		if(set.next()) {
-			disconnect();
 			return true;
 		}
-		disconnect();
 		return false;
 	}
 	
@@ -282,14 +261,12 @@ public class MySQL
 			int x = set.getInt("chest_x");
 			int y= set.getInt("chest_y");
 			int z = set.getInt("chest_z");
-			disconnect();
 			if(world == null) {
 				return null;
 			} else {
 				return new Location(Bukkit.getWorld(world), x, y, z);
 			}
 		}
-		disconnect();
 		return null;
 	}
 	
@@ -303,10 +280,8 @@ public class MySQL
 			int x = set.getInt("sign_x");
 			int y= set.getInt("sign_y");
 			int z = set.getInt("sign_z");
-			disconnect();
 			return new Location(Bukkit.getWorld(world), x, y, z);
 		}
-		disconnect();
 		return null;
 	}
 	
@@ -316,11 +291,8 @@ public class MySQL
 		stat.setInt(1, id);
 		ResultSet set = stat.executeQuery();
 		if(set.next()) {
-			UUID result = UUID.fromString(set.getString("owner"));
-			disconnect();
-			return result;
+            return UUID.fromString(set.getString("owner"));
 		}
-		disconnect();
 		return null;
 	}
 	
@@ -332,14 +304,10 @@ public class MySQL
 		if(set.next()) {
 			String string = set.getString("item");
 			if(string == null) {
-				disconnect();
 				return null;
 			}
-			ItemStack result = fromString(string);
-			disconnect();
-			return result;
+            return fromString(string);
 		}
-		disconnect();
 		return null;
 	}
 	
@@ -349,11 +317,8 @@ public class MySQL
 		stat.setInt(1, id);
 		ResultSet set = stat.executeQuery();
 		if(set.next()) {
-			int result = set.getInt("mode");
-			disconnect();
-			return result;
+            return set.getInt("mode");
 		}
-		disconnect();
 		return 0;
 	}
 	
@@ -363,11 +328,8 @@ public class MySQL
 		stat.setInt(1, id);
 		ResultSet set = stat.executeQuery();
 		if(set.next()) {
-			double result = set.getDouble("price");
-			disconnect();
-			return result;
+            return set.getDouble("price");
 		}
-		disconnect();
 		return 0;
 	}
 
@@ -377,11 +339,8 @@ public class MySQL
 		stat.setInt(1, id);
 		ResultSet set = stat.executeQuery();
 		if(set.next()) {
-			String result = set.getString("rank");
-			disconnect();
-			return result;
+            return set.getString("rank");
 		}
-		disconnect();
 		return null;
 	}
 
@@ -391,11 +350,8 @@ public class MySQL
 		stat.setInt(1, id);
 		ResultSet set = stat.executeQuery();
 		if(set.next()) {
-			int result = set.getInt("delay");
-			disconnect();
-			return result;
+            return set.getInt("delay");
 		}
-		disconnect();
 		return -1;
 	}
 
@@ -405,15 +361,15 @@ public class MySQL
 		stat.setInt(1, id);
 		ResultSet set = stat.executeQuery();
 		if(set.next()) {
-			String result = set.getString("description");
-			disconnect();
-			return result;
+            return set.getString("description");
 		}
-		disconnect();
 		return null;
 	}
 
-	private void disconnect() throws SQLException {
-		this.con.close();
+	public void disconnect() throws SQLException {
+		if (con == null || con.isClosed()) {
+			return;
+		}
+		con.close();
 	}
 }
