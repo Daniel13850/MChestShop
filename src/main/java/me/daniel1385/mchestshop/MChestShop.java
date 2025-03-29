@@ -2,7 +2,6 @@ package me.daniel1385.mchestshop;
 
 import me.daniel1385.mchestshop.apis.Metrics;
 import me.daniel1385.mchestshop.apis.MySQL;
-import me.daniel1385.mchestshop.commands.CBankCommand;
 import me.daniel1385.mchestshop.commands.ChestShopCommand;
 import me.daniel1385.mchestshop.listener.ChestShopListener;
 import org.bukkit.Bukkit;
@@ -42,13 +41,9 @@ public class MChestShop extends JavaPlugin {
 			config.set("format.line4", "&a{Price}");
 			config.set("format.economy", "$");
 		}
-		if(!config.contains("enable-offline-bank")) {
-			config.set("enable-offline-bank", false);
-		}
 		saveConfig();
 		prefix = translateAllCodes(config.getString("prefix")) + "§r";
 		boolean usemysql = config.getBoolean("mysql.use");
-		boolean usebank = config.getBoolean("enable-offline-bank");
 		if(usemysql) {
 			mysql = new MySQL(config.getString("mysql.host"), config.getInt("mysql.port"), config.getString("mysql.database"), config.getString("mysql.username"), config.getString("mysql.password"), config.getString("mysql.prefix"));
 		} else {
@@ -56,7 +51,7 @@ public class MChestShop extends JavaPlugin {
 			mysql = new MySQL(dbfile.getAbsolutePath());
 		}
 		try {
-			mysql.init(usebank);
+			mysql.init();
 		} catch(SQLException e) {
 			e.printStackTrace();
 			Bukkit.getPluginManager().disablePlugin(this);
@@ -68,9 +63,8 @@ public class MChestShop extends JavaPlugin {
 		lines.add(translateAllCodes(config.getString("format.line3")));
 		lines.add(translateAllCodes(config.getString("format.line4")));
 		String economy = config.getString("format.economy");
-		getCommand("chestshop").setExecutor(new ChestShopCommand(mysql, lines, economy, usebank, this));
-		Bukkit.getPluginManager().registerEvents(new ChestShopListener(this, mysql, economy, usebank), this);
-		getCommand("cbank").setExecutor(new CBankCommand(mysql, usebank, this));
+		getCommand("chestshop").setExecutor(new ChestShopCommand(mysql, lines, economy, this));
+		Bukkit.getPluginManager().registerEvents(new ChestShopListener(this, mysql, economy), this);
 		Metrics metrics = new Metrics(this, 24660);
 	}
 

@@ -32,13 +32,11 @@ public class ChestShopListener implements Listener {
 	private MChestShop plugin;
 	private MySQL mysql;
 	private String economy;
-    private boolean usebank;
 	
-	public ChestShopListener(MChestShop plugin, MySQL mysql, String economy, boolean usebank) {
+	public ChestShopListener(MChestShop plugin, MySQL mysql, String economy) {
 		this.plugin = plugin;
 		this.mysql = mysql;
 		this.economy = economy;
-        this.usebank = usebank;
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -85,7 +83,7 @@ public class ChestShopListener implements Listener {
 			int mode = mysql.getMode(id);
 			if(mode == 6) {
 				double price = mysql.getPrice(id);
-				new PlotChestShopGUI(id, mysql, plugin, desc, price, owner.toString(), economy, usebank, loc).open(event.getPlayer());
+				new PlotChestShopGUI(id, mysql, plugin, desc, price, owner.toString(), economy, loc).open(event.getPlayer());
 				return;
 			}
 			ItemStack item = mysql.getItem(id);
@@ -121,7 +119,7 @@ public class ChestShopListener implements Listener {
 				return;
 			}
 			double price = mysql.getPrice(id);
-			new ChestShopGUI(id, mysql, plugin, desc, item, price, mode == 2, chestLoc, plot.getOwner().toString(), economy, usebank, loc).open(event.getPlayer());
+			new ChestShopGUI(id, mysql, plugin, desc, item, price, mode == 2, chestLoc, plot.getOwner().toString(), economy, loc).open(event.getPlayer());
 		} catch(Exception e) {
 			e.printStackTrace();
 			event.getPlayer().sendMessage(plugin.getPrefix() + "§4Ein Fehler ist aufgetreten!");

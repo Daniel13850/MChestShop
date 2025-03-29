@@ -34,14 +34,12 @@ public class ChestShopCommand implements CommandExecutor {
 	private MySQL mysql;
 	private List<String> lines;
 	private String economy;
-    private boolean usebank;
 	private MChestShop plugin;
 	
-	public ChestShopCommand(MySQL mysql, List<String> lines, String economy, boolean usebank, MChestShop plugin) {
+	public ChestShopCommand(MySQL mysql, List<String> lines, String economy, MChestShop plugin) {
 		this.mysql = mysql;
 		this.lines = lines;
 		this.economy = economy;
-        this.usebank = usebank;
 		this.plugin = plugin;
 	}
 
@@ -216,9 +214,6 @@ public class ChestShopCommand implements CommandExecutor {
 				cont.set(key, PersistentDataType.INTEGER, id);
 				sign.update();
 				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-                if(usebank) {
-                    p.sendMessage("§cHinweis: §6Einnahmen werden in der ChestShop-Bank gespeichert (§e/cbank§6).");
-                }
 				return true;
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -306,10 +301,6 @@ public class ChestShopCommand implements CommandExecutor {
 				cont.set(key, PersistentDataType.INTEGER, id);
 				sign.update();
 				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-                if(usebank) {
-                    p.sendMessage("§cHinweis: §6Ausgaben werden von der ChestShop-Bank abgezogen (§e/cbank§6).");
-                    p.sendMessage("§6Achte darauf, dass genügend Geld dort vorhanden ist!");
-                }
 				return true;
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -653,9 +644,6 @@ public class ChestShopCommand implements CommandExecutor {
 				cont.set(key, PersistentDataType.INTEGER, id);
 				sign.update();
 				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-                if(usebank) {
-                    p.sendMessage("§cHinweis: §6Einnahmen werden in der ChestShop-Bank gespeichert (§e/cbank§6).");
-                }
 				return true;
 			} catch(Exception e) {
 				e.printStackTrace();

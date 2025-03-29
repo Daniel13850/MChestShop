@@ -7,4 +7,3 @@ depend: [PlotSquared, Vault]
 commands:
   chestshop:
     aliases: [csh]
-  cbank: {}

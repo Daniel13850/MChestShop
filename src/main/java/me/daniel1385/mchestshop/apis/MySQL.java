@@ -53,27 +53,7 @@ public class MySQL
 		}
 	}
 
-	public double getBank(UUID uuid) throws SQLException {
-		connect();
-		ResultSet set = con.prepareStatement("SELECT * FROM `" + prefix + "chestshop_bank` WHERE `uuid`='" + uuid.toString() + "'").executeQuery();
-		if(set.next()) {
-            return set.getDouble("money");
-		} else {
-			return 0;
-		}
-	}
-
-	public void setBank(UUID uuid, double money) throws SQLException {
-		connect();
-		ResultSet set = con.prepareStatement("SELECT * FROM `" + prefix + "chestshop_bank` WHERE `uuid`='" + uuid.toString() + "'").executeQuery();
-		if(set.next()) {
-			con.prepareStatement("UPDATE `" + prefix + "chestshop_bank` SET `money` = '" + money + "' WHERE `uuid`='" + uuid.toString() + "';").execute();
-		} else {
-			con.prepareStatement("INSERT INTO `" + prefix + "chestshop_bank` (`uuid`, `money`) VALUES ('" + uuid.toString() + "', '" + money + "')").execute();
-		}
-	}
-
-    public void init(boolean bank) throws SQLException {
+    public void init() throws SQLException {
         connect();
 		if(file == null) {
 			con.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "chestshops` (`id` int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT, `owner` varchar(36) NOT NULL, `sign_world` text NOT NULL, `sign_x` int(11) NOT NULL, `sign_y` int(11) NOT NULL, `sign_z` int(11) NOT NULL, `chest_world` text DEFAULT NULL, `chest_x` int(11) DEFAULT NULL, `chest_y` int(11) DEFAULT NULL, `chest_z` int(11) DEFAULT NULL, `item` text DEFAULT NULL, `mode` int(11) NOT NULL, `price` double NOT NULL, `description` text NOT NULL, `rank` text DEFAULT NULL, `delay` int(11) DEFAULT NULL);").execute();
@@ -81,9 +61,6 @@ public class MySQL
 			con.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "chestshops` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `owner` varchar(36) NOT NULL, `sign_world` text NOT NULL, `sign_x` int(11) NOT NULL, `sign_y` int(11) NOT NULL, `sign_z` int(11) NOT NULL, `chest_world` text DEFAULT NULL, `chest_x` int(11) DEFAULT NULL, `chest_y` int(11) DEFAULT NULL, `chest_z` int(11) DEFAULT NULL, `item` text DEFAULT NULL, `mode` int(11) NOT NULL, `price` double NOT NULL, `description` text NOT NULL, `rank` text DEFAULT NULL, `delay` int(11) DEFAULT NULL);").execute();
 		}
 		con.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "freeshop_uses` (`id` varchar(50) PRIMARY KEY, `time` BIGINT NOT NULL);").execute();
-		if(bank) {
-			con.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "chestshop_bank` (`uuid` varchar(36) PRIMARY KEY NOT NULL, `money` double NOT NULL);").execute();
-		}
     }
 	
 	public int createChestShop(UUID uuid, Location sign, Location chest, ItemStack item, int mode, double price, String desc) throws Exception {
