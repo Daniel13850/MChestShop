@@ -68,7 +68,7 @@ public class PlotChestShopGUI extends InventoryGUI {
 			plot.setOwner(paramPlayer.getUniqueId());
 			Player powner = Bukkit.getPlayer(UUID.fromString(owner));
 			if(!usebank) {
-				MoneyAPI.addMoney(UUID.fromString(owner), price, "Eigener ChestShop #" + id + " (" + desc + ") " + 1 + "x" + " (" + paramPlayer.getUniqueId().toString() + ")");
+				MoneyAPI.addMoney(UUID.fromString(owner), price, "Eigener ChestShop #" + id + " (" + desc + ") " + 1 + "x" + " (" + paramPlayer.getName() + ")");
 			} else {
 				mysql.setBank(UUID.fromString(owner), mysql.getBank(UUID.fromString(owner)) + price);
 			}

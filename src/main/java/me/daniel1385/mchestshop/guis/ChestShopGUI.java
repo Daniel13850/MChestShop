@@ -143,7 +143,7 @@ public class ChestShopGUI extends InventoryGUI {
 					paramPlayer.getInventory().addItem(neu);
 				}
 				if(!usebank) {
-					MoneyAPI.addMoney(UUID.fromString(owner), betrag, "Eigener ChestShop #" + id + " (" + desc + ") " + anzahl + "x" + " (" + paramPlayer.getUniqueId().toString() + ")");
+					MoneyAPI.addMoney(UUID.fromString(owner), betrag, "Eigener ChestShop #" + id + " (" + desc + ") " + anzahl + "x" + " (" + paramPlayer.getName() + ")");
 				} else {
 					mysql.setBank(UUID.fromString(owner), mysql.getBank(UUID.fromString(owner)) + betrag);
 				}
@@ -163,7 +163,7 @@ public class ChestShopGUI extends InventoryGUI {
 				}
 				double betrag = price * anzahl;
 				if(!usebank) {
-					if(!MoneyAPI.removeMoney(UUID.fromString(owner), betrag, "Eigener ChestShop #" + id + " (" + desc + ") " + anzahl + "x" + " (" + paramPlayer.getUniqueId().toString() + ")")) {
+					if(!MoneyAPI.removeMoney(UUID.fromString(owner), betrag, "Eigener ChestShop #" + id + " (" + desc + ") " + anzahl + "x" + " (" + paramPlayer.getName() + ")")) {
 						paramPlayer.sendMessage(plugin.getPrefix() + "§cDer Besitzer hat nicht genug Geld!");
 						return;
 					}
