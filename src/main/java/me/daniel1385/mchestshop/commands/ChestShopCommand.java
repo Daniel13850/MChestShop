@@ -811,9 +811,8 @@ public class ChestShopCommand implements CommandExecutor {
 	private Block getAttached(Block b) {
 		if (!(b.getBlockData() instanceof org.bukkit.block.data.type.Sign) && !(b.getBlockData() instanceof org.bukkit.block.data.type.WallSign)) return null;
 
-		if (b.getBlockData() instanceof Directional) {
-			Directional d = (Directional)b.getBlockData();
-			return b.getRelative(d.getFacing().getOppositeFace());
+		if (b.getBlockData() instanceof Directional d) {
+            return b.getRelative(d.getFacing().getOppositeFace());
 		}
 
 		return b.getRelative(BlockFace.DOWN);
