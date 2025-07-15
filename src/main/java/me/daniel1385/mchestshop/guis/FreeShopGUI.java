@@ -104,7 +104,7 @@ public class FreeShopGUI extends InventoryGUI {
 				return;
 			}
 			int entfernen = info.getItem().getAmount();
-			if(info.getChestLocation() != null) { // Kein AdminShop
+			if(!info.isAdminShop()) {
 				if(ContainerAPI.getAmount(info.getChestLocation(), new ItemStack(info.getItem())) < entfernen) {
 					paramPlayer.sendMessage(plugin.getPrefix() + "§cDer Behälter ist leer!");
 					setItem(4+9, Material.LIME_STAINED_GLASS_PANE, "§aJetzt abholen!");
