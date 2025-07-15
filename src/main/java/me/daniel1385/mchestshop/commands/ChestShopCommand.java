@@ -199,12 +199,6 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			ChestShopInfo info = new ChestShopInfo(ChestShopType.BUY, cloc, hand, betrag, desc.toString(), null, plot.getOwner());
 			plugin.update(sign, info);
-			List<String> lines = plugin.getSignLines();
-			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), desc.toString(), "BUY", betrag));
-			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), desc.toString(), "BUY", betrag));
-			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), desc.toString(), "BUY", betrag));
-			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), desc.toString(), "BUY", betrag));
-			sign.update();
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
 		}
@@ -279,12 +273,6 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			ChestShopInfo info = new ChestShopInfo(ChestShopType.SELL, cloc, hand, betrag, desc.toString(), null, plot.getOwner());
 			plugin.update(sign, info);
-			List<String> lines = plugin.getSignLines();
-			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), desc.toString(), "SELL", betrag));
-			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), desc.toString(), "SELL", betrag));
-			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), desc.toString(), "SELL", betrag));
-			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), desc.toString(), "SELL", betrag));
-			sign.update();
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
 		}
@@ -403,12 +391,6 @@ public class ChestShopCommand implements CommandExecutor {
 			FreeShopInfo finfo = new FreeShopInfo(rank, delay);
 			ChestShopInfo info = new ChestShopInfo(ChestShopType.FREE, cloc, hand, null, desc.toString(), finfo, plot.getOwner());
 			plugin.update(sign, info);
-			List<String> lines = plugin.getSignLines();
-			sign.getSide(Side.FRONT).setLine(0, getFreeShopSignText(lines.get(0), desc.toString(), rank));
-			sign.getSide(Side.FRONT).setLine(1, getFreeShopSignText(lines.get(1), desc.toString(), rank));
-			sign.getSide(Side.FRONT).setLine(2, getFreeShopSignText(lines.get(2), desc.toString(), rank));
-			sign.getSide(Side.FRONT).setLine(3, getFreeShopSignText(lines.get(3), desc.toString(), rank));
-			sign.update();
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
 		}
@@ -472,12 +454,6 @@ public class ChestShopCommand implements CommandExecutor {
 			hand = new ItemStack(hand);
 			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINBUY, null, hand, betrag, desc.toString(), null, plot.getOwner());
 			plugin.update(sign, info);
-			List<String> lines = plugin.getSignLines();
-			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), desc.toString(), "BUY", betrag));
-			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), desc.toString(), "BUY", betrag));
-			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), desc.toString(), "BUY", betrag));
-			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), desc.toString(), "BUY", betrag));
-			sign.update();
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
 		}
@@ -541,12 +517,6 @@ public class ChestShopCommand implements CommandExecutor {
 			hand = new ItemStack(hand);
 			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINSELL, null, hand, betrag, desc.toString(), null, plot.getOwner());
 			plugin.update(sign, info);
-			List<String> lines = plugin.getSignLines();
-			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), desc.toString(), "SELL", betrag));
-			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), desc.toString(), "SELL", betrag));
-			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), desc.toString(), "SELL", betrag));
-			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), desc.toString(), "SELL", betrag));
-			sign.update();
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
 		}
@@ -606,12 +576,6 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			ChestShopInfo info = new ChestShopInfo(ChestShopType.PLOT, null, null, betrag, desc.toString(), null, plot.getOwner());
 			plugin.update(sign, info);
-			List<String> lines = plugin.getSignLines();
-			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
-			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
-			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
-			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
-			sign.update();
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
 		}
@@ -719,31 +683,11 @@ public class ChestShopCommand implements CommandExecutor {
 			FreeShopInfo finfo = new FreeShopInfo(rank, delay);
 			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINFREE, null, hand, null, desc.toString(), finfo, plot.getOwner());
 			plugin.update(sign, info);
-			List<String> lines = plugin.getSignLines();
-			sign.getSide(Side.FRONT).setLine(0, getFreeShopSignText(lines.get(0), desc.toString(), rank));
-			sign.getSide(Side.FRONT).setLine(1, getFreeShopSignText(lines.get(1), desc.toString(), rank));
-			sign.getSide(Side.FRONT).setLine(2, getFreeShopSignText(lines.get(2), desc.toString(), rank));
-			sign.getSide(Side.FRONT).setLine(3, getFreeShopSignText(lines.get(3), desc.toString(), rank));
-			sign.update();
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
 		}
 		p.sendMessage(plugin.getPrefix() + "§cUngültiger Befehl! §6/chestshop §cfür Hilfe!");
 		return false;
-	}
-
-    private String getSignText(String line, String desc, String type, double price) {
-		line = line.replace("{Description}", desc);
-		line = line.replace("{Type}", type);
-		line = line.replace("{Price}", DecimalFormat.getNumberInstance(Locale.GERMAN).format(price) + plugin.getEconomySuffix());
-		return line;
-	}
-
-	private String getFreeShopSignText(String line, String desc, String rank) {
-		line = line.replace("{Description}", desc);
-		line = line.replace("{Type}", "FREE");
-		line = line.replace("{Price}", rank);
-		return line;
 	}
 
 	private Location getContainerAttached(Location loc, Plot plot) {

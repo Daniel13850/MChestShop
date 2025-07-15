@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -20,6 +21,7 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -145,8 +147,34 @@ public class MChestShop extends JavaPlugin {
 			cont.remove(keyFree);
 		}
 
+		if(!info.isFreeShop()) {
+			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), info.getDescription(), info.getType().toString(), info.getPrice()));
+			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), info.getDescription(), info.getType().toString(), info.getPrice()));
+			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), info.getDescription(), info.getType().toString(), info.getPrice()));
+			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), info.getDescription(), info.getType().toString(), info.getPrice()));
+		} else {
+			sign.getSide(Side.FRONT).setLine(0, getFreeShopSignText(lines.get(0), info.getDescription(), info.getType().toString(), info.getFreeShopInfo().getRank()));
+			sign.getSide(Side.FRONT).setLine(1, getFreeShopSignText(lines.get(1), info.getDescription(), info.getType().toString(), info.getFreeShopInfo().getRank()));
+			sign.getSide(Side.FRONT).setLine(2, getFreeShopSignText(lines.get(2), info.getDescription(), info.getType().toString(), info.getFreeShopInfo().getRank()));
+			sign.getSide(Side.FRONT).setLine(3, getFreeShopSignText(lines.get(3), info.getDescription(), info.getType().toString(), info.getFreeShopInfo().getRank()));
+		}
+
 		sign.update();
 		return true;
+	}
+
+	private String getSignText(String line, String desc, String type, double price) {
+		line = line.replace("{Description}", desc);
+		line = line.replace("{Type}", type);
+		line = line.replace("{Price}", DecimalFormat.getNumberInstance(Locale.GERMAN).format(price) + economy);
+		return line;
+	}
+
+	private String getFreeShopSignText(String line, String desc, String type, String rank) {
+		line = line.replace("{Description}", desc);
+		line = line.replace("{Type}", type);
+		line = line.replace("{Price}", rank);
+		return line;
 	}
 
 	public long getFreeShopRestTime(Sign sign, UUID uuid) {
