@@ -4,11 +4,12 @@ import com.plotsquared.bukkit.util.BukkitUtil;
 import com.plotsquared.core.plot.Plot;
 import me.daniel1385.mchestshop.MChestShop;
 import me.daniel1385.mchestshop.apis.LuckPermsAPI;
-import me.daniel1385.mchestshop.apis.MySQL;
+import me.daniel1385.mchestshop.objects.ChestShopInfo;
+import me.daniel1385.mchestshop.objects.ChestShopType;
+import me.daniel1385.mchestshop.objects.FreeShopInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Container;
@@ -20,26 +21,19 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 public class ChestShopCommand implements CommandExecutor {
-	private MySQL mysql;
-	private List<String> lines;
-	private String economy;
 	private MChestShop plugin;
 	
-	public ChestShopCommand(MySQL mysql, List<String> lines, String economy, MChestShop plugin) {
-		this.mysql = mysql;
-		this.lines = lines;
-		this.economy = economy;
+	public ChestShopCommand(MChestShop plugin) {
 		this.plugin = plugin;
 	}
 
@@ -98,7 +92,7 @@ public class ChestShopCommand implements CommandExecutor {
 				p.sendMessage(plugin.getPrefix() + "§6§lChestShop Tutorial");
 				p.sendMessage("§aGrundstück verkaufen:");
 				p.sendMessage("§91. §dPlatziere ein Schild auf dem Grundstück und schaue es an.");
-				p.sendMessage("§92. §dGebe ein: §c/csh sellplot <Preis>");
+				p.sendMessage("§92. §dGebe ein: §c/csh sellplot <Preis> <Beschreibung>");
 				p.sendMessage("§aItems verschenken:");
 				p.sendMessage("§91. §dPlatziere ein Schild an einer Truhe und schaue es an.");
 				p.sendMessage("§92. §dHalte das Item das du verschenken möchtest in der entsprechenden Anzahl in der Hand.");
@@ -182,7 +176,7 @@ public class ChestShopCommand implements CommandExecutor {
 				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
 				return false;
 			}
-			if(!plot.getOwner().toString().equals(p.getUniqueId().toString())) {
+			if(!plot.getOwner().equals(p.getUniqueId())) {
 				if(!p.hasPermission("chestshop.admin")) {
 					p.sendMessage(plugin.getPrefix() + "§cDas ist nicht dein Grundstück!");
 					return false;
@@ -203,23 +197,16 @@ public class ChestShopCommand implements CommandExecutor {
 				p.sendMessage(plugin.getPrefix() + "§cEs ist keine Truhe an dem Schild!");
 				return false;
 			}
-			try {
-				int id = mysql.createChestShop(plot.getOwner(), loc, cloc, hand, 1, betrag, desc.toString());
-				sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), id, desc.toString(), "BUY", betrag));
-				sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), id, desc.toString(), "BUY", betrag));
-				sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), id, desc.toString(), "BUY", betrag));
-				sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), id, desc.toString(), "BUY", betrag));
-				PersistentDataContainer cont = sign.getPersistentDataContainer();
-				NamespacedKey key = new NamespacedKey(plugin, "shopid");
-				cont.set(key, PersistentDataType.INTEGER, id);
-				sign.update();
-				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-				return true;
-			} catch(Exception e) {
-				e.printStackTrace();
-				p.sendMessage(plugin.getPrefix() + "§4Ein Fehler ist aufgetreten!");
-				return false;
-			}
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.BUY, cloc, hand, betrag, desc.toString(), null, plot.getOwner());
+			plugin.update(sign, info);
+			List<String> lines = plugin.getSignLines();
+			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), desc.toString(), "BUY", betrag));
+			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), desc.toString(), "BUY", betrag));
+			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), desc.toString(), "BUY", betrag));
+			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), desc.toString(), "BUY", betrag));
+			sign.update();
+			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
+			return true;
 		}
 		if(args[0].toLowerCase().equals("ankauf")) {
 			if(args.length < 3) {
@@ -269,7 +256,7 @@ public class ChestShopCommand implements CommandExecutor {
 				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
 				return false;
 			}
-			if(!plot.getOwner().toString().equals(p.getUniqueId().toString())) {
+			if(!plot.getOwner().equals(p.getUniqueId())) {
 				if(!p.hasPermission("chestshop.admin")) {
 					p.sendMessage(plugin.getPrefix() + "§cDas ist nicht dein Grundstück!");
 					return false;
@@ -290,28 +277,21 @@ public class ChestShopCommand implements CommandExecutor {
 				p.sendMessage(plugin.getPrefix() + "§cEs ist keine Truhe an dem Schild!");
 				return false;
 			}
-			try {
-				int id = mysql.createChestShop(plot.getOwner(), loc, cloc, hand, 2, betrag, desc.toString());
-				sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), id, desc.toString(), "SELL", betrag));
-				sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), id, desc.toString(), "SELL", betrag));
-				sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), id, desc.toString(), "SELL", betrag));
-				sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), id, desc.toString(), "SELL", betrag));
-				PersistentDataContainer cont = sign.getPersistentDataContainer();
-				NamespacedKey key = new NamespacedKey(plugin, "shopid");
-				cont.set(key, PersistentDataType.INTEGER, id);
-				sign.update();
-				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-				return true;
-			} catch(Exception e) {
-				e.printStackTrace();
-				p.sendMessage(plugin.getPrefix() + "§4Ein Fehler ist aufgetreten!");
-				return false;
-			}
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.SELL, cloc, hand, betrag, desc.toString(), null, plot.getOwner());
+			plugin.update(sign, info);
+			List<String> lines = plugin.getSignLines();
+			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), desc.toString(), "SELL", betrag));
+			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), desc.toString(), "SELL", betrag));
+			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), desc.toString(), "SELL", betrag));
+			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), desc.toString(), "SELL", betrag));
+			sign.update();
+			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
+			return true;
 		}
 		if(args[0].toLowerCase().equals("free")) {
 			if(args.length < 4) {
 				p.sendMessage(plugin.getPrefix() + "§cSyntax: §6/csh free [Zeitabstand]<Einheit> <Mindestrang> <Beschreibung>");
-				sender.sendMessage("§6Gültige Einheiten:");
+				sender.sendMessage("§cGültige Einheiten:");
 				sender.sendMessage("§es: Sekunden");
 				sender.sendMessage("§em: Minuten");
 				sender.sendMessage("§eh: Stunden");
@@ -363,8 +343,8 @@ public class ChestShopCommand implements CommandExecutor {
 					return false;
 				}
 			}
-			String rank = args[2];
-			if(!groupExist(rank)) {
+			String rank = getGroupID(args[2]);
+			if(rank == null) {
 				p.sendMessage(plugin.getPrefix() + "§cDieser Rang existiert nicht!");
 				return false;
 			}
@@ -399,7 +379,7 @@ public class ChestShopCommand implements CommandExecutor {
 				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
 				return false;
 			}
-			if(!plot.getOwner().toString().equals(p.getUniqueId().toString())) {
+			if(!plot.getOwner().equals(p.getUniqueId())) {
 				if(!p.hasPermission("chestshop.admin")) {
 					p.sendMessage(plugin.getPrefix() + "§cDas ist nicht dein Grundstück!");
 					return false;
@@ -420,23 +400,17 @@ public class ChestShopCommand implements CommandExecutor {
 				p.sendMessage(plugin.getPrefix() + "§cEs ist keine Truhe an dem Schild!");
 				return false;
 			}
-			try {
-				int id = mysql.createFreeShop(plot.getOwner(), loc, cloc, hand, 3, rank, delay, desc.toString());
-				sign.getSide(Side.FRONT).setLine(0, getFreeShopSignText(lines.get(0), id, desc.toString(), rank));
-				sign.getSide(Side.FRONT).setLine(1, getFreeShopSignText(lines.get(1), id, desc.toString(), rank));
-				sign.getSide(Side.FRONT).setLine(2, getFreeShopSignText(lines.get(2), id, desc.toString(), rank));
-				sign.getSide(Side.FRONT).setLine(3, getFreeShopSignText(lines.get(3), id, desc.toString(), rank));
-				PersistentDataContainer cont = sign.getPersistentDataContainer();
-				NamespacedKey key = new NamespacedKey(plugin, "shopid");
-				cont.set(key, PersistentDataType.INTEGER, id);
-				sign.update();
-				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-				return true;
-			} catch(Exception e) {
-				e.printStackTrace();
-				p.sendMessage(plugin.getPrefix() + "§4Ein Fehler ist aufgetreten!");
-				return false;
-			}
+			FreeShopInfo finfo = new FreeShopInfo(rank, delay);
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.FREE, cloc, hand, null, desc.toString(), finfo, plot.getOwner());
+			plugin.update(sign, info);
+			List<String> lines = plugin.getSignLines();
+			sign.getSide(Side.FRONT).setLine(0, getFreeShopSignText(lines.get(0), desc.toString(), rank));
+			sign.getSide(Side.FRONT).setLine(1, getFreeShopSignText(lines.get(1), desc.toString(), rank));
+			sign.getSide(Side.FRONT).setLine(2, getFreeShopSignText(lines.get(2), desc.toString(), rank));
+			sign.getSide(Side.FRONT).setLine(3, getFreeShopSignText(lines.get(3), desc.toString(), rank));
+			sign.update();
+			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
+			return true;
 		}
 		if(args[0].toLowerCase().equals("adminverkauf") && p.hasPermission("chestshop.admin")) {
 			if(args.length < 3) {
@@ -496,23 +470,16 @@ public class ChestShopCommand implements CommandExecutor {
 				return false;
 			}
 			hand = new ItemStack(hand);
-			try {
-				int id = mysql.createAdminChestShop(plot.getOwner(), loc, hand, 4, betrag, desc.toString());
-				sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), id, desc.toString(), "BUY", betrag));
-				sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), id, desc.toString(), "BUY", betrag));
-				sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), id, desc.toString(), "BUY", betrag));
-				sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), id, desc.toString(), "BUY", betrag));
-				PersistentDataContainer cont = sign.getPersistentDataContainer();
-				NamespacedKey key = new NamespacedKey(plugin, "shopid");
-				cont.set(key, PersistentDataType.INTEGER, id);
-				sign.update();
-				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-				return true;
-			} catch(Exception e) {
-				e.printStackTrace();
-				p.sendMessage(plugin.getPrefix() + "§4Ein Fehler ist aufgetreten!");
-				return false;
-			}
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINBUY, null, hand, betrag, desc.toString(), null, plot.getOwner());
+			plugin.update(sign, info);
+			List<String> lines = plugin.getSignLines();
+			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), desc.toString(), "BUY", betrag));
+			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), desc.toString(), "BUY", betrag));
+			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), desc.toString(), "BUY", betrag));
+			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), desc.toString(), "BUY", betrag));
+			sign.update();
+			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
+			return true;
 		}
 		if(args[0].toLowerCase().equals("adminankauf") && p.hasPermission("chestshop.admin")) {
 			if(args.length < 3) {
@@ -572,27 +539,20 @@ public class ChestShopCommand implements CommandExecutor {
 				return false;
 			}
 			hand = new ItemStack(hand);
-			try {
-				int id = mysql.createAdminChestShop(plot.getOwner(), loc, hand, 5, betrag, desc.toString());
-				sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), id, desc.toString(), "SELL", betrag));
-				sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), id, desc.toString(), "SELL", betrag));
-				sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), id, desc.toString(), "SELL", betrag));
-				sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), id, desc.toString(), "SELL", betrag));
-				PersistentDataContainer cont = sign.getPersistentDataContainer();
-				NamespacedKey key = new NamespacedKey(plugin, "shopid");
-				cont.set(key, PersistentDataType.INTEGER, id);
-				sign.update();
-				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-				return true;
-			} catch(Exception e) {
-				e.printStackTrace();
-				p.sendMessage(plugin.getPrefix() + "§4Ein Fehler ist aufgetreten!");
-				return false;
-			}
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINSELL, null, hand, betrag, desc.toString(), null, plot.getOwner());
+			plugin.update(sign, info);
+			List<String> lines = plugin.getSignLines();
+			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), desc.toString(), "SELL", betrag));
+			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), desc.toString(), "SELL", betrag));
+			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), desc.toString(), "SELL", betrag));
+			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), desc.toString(), "SELL", betrag));
+			sign.update();
+			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
+			return true;
 		}
 		if(args[0].toLowerCase().equals("sellplot")) {
-			if(args.length < 2) {
-				p.sendMessage(plugin.getPrefix() + "§cSyntax: §6/csh sellplot <Preis>");
+			if(args.length < 3) {
+				p.sendMessage(plugin.getPrefix() + "§cSyntax: §6/csh sellplot <Preis> <Beschreibung>");
 				return false;
 			}
 			double betrag;
@@ -606,6 +566,17 @@ public class ChestShopCommand implements CommandExecutor {
 			if(betrag < 0) {
 				p.sendMessage(plugin.getPrefix() + "§cBitte gebe einen positiven Betrag ein!");
 				return false;
+			}
+			StringBuilder desc = new StringBuilder();
+			for(int i = 0; i < args.length; i++) {
+				if(i < 2) {
+					continue;
+				}
+				if(i == 2) {
+					desc.append(args[i]);
+				} else {
+					desc.append(" " + args[i]);
+				}
 			}
 			Block block = p.getTargetBlockExact(5);
 			if(block == null) {
@@ -627,29 +598,22 @@ public class ChestShopCommand implements CommandExecutor {
 				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
 				return false;
 			}
-			if(!plot.getOwner().toString().equals(p.getUniqueId().toString())) {
+			if(!plot.getOwner().equals(p.getUniqueId())) {
 				if(!p.hasPermission("chestshop.admin")) {
 					p.sendMessage("§cDas ist nicht dein Grundstück!");
 					return false;
 				}
 			}
-			try {
-				int id = mysql.createPlotChestShop(plot.getOwner(), loc, 6, betrag, "Plot " + plot.getId().getX() + ";" + plot.getId().getY());
-				sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), id, "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
-				sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), id, "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
-				sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), id, "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
-				sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), id, "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
-				PersistentDataContainer cont = sign.getPersistentDataContainer();
-				NamespacedKey key = new NamespacedKey(plugin, "shopid");
-				cont.set(key, PersistentDataType.INTEGER, id);
-				sign.update();
-				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-				return true;
-			} catch(Exception e) {
-				e.printStackTrace();
-				p.sendMessage(plugin.getPrefix() + "§4Ein Fehler ist aufgetreten!");
-				return false;
-			}
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.PLOT, null, null, betrag, desc.toString(), null, plot.getOwner());
+			plugin.update(sign, info);
+			List<String> lines = plugin.getSignLines();
+			sign.getSide(Side.FRONT).setLine(0, getSignText(lines.get(0), "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
+			sign.getSide(Side.FRONT).setLine(1, getSignText(lines.get(1), "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
+			sign.getSide(Side.FRONT).setLine(2, getSignText(lines.get(2), "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
+			sign.getSide(Side.FRONT).setLine(3, getSignText(lines.get(3), "Plot " + plot.getId().getX() + ";" + plot.getId().getY(), "BUYPLOT", betrag));
+			sign.update();
+			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
+			return true;
 		}
 		if(args[0].toLowerCase().equals("adminfree") && p.hasPermission("chestshop.admin")) {
 			if(args.length < 4) {
@@ -706,8 +670,8 @@ public class ChestShopCommand implements CommandExecutor {
 					return false;
 				}
 			}
-			String rank = args[2];
-			if(!groupExist(rank)) {
+			String rank = getGroupID(args[2]);
+			if(rank == null) {
 				p.sendMessage(plugin.getPrefix() + "§cDieser Rang existiert nicht!");
 				return false;
 			}
@@ -752,38 +716,30 @@ public class ChestShopCommand implements CommandExecutor {
 				return false;
 			}
 			hand = new ItemStack(hand);
-			try {
-				int id = mysql.createAdminFreeShop(plot.getOwner(), loc, hand, 7, rank, delay, desc.toString());
-				sign.getSide(Side.FRONT).setLine(0, getFreeShopSignText(lines.get(0), id, desc.toString(), rank));
-				sign.getSide(Side.FRONT).setLine(1, getFreeShopSignText(lines.get(1), id, desc.toString(), rank));
-				sign.getSide(Side.FRONT).setLine(2, getFreeShopSignText(lines.get(2), id, desc.toString(), rank));
-				sign.getSide(Side.FRONT).setLine(3, getFreeShopSignText(lines.get(3), id, desc.toString(), rank));
-				PersistentDataContainer cont = sign.getPersistentDataContainer();
-				NamespacedKey key = new NamespacedKey(plugin, "shopid");
-				cont.set(key, PersistentDataType.INTEGER, id);
-				sign.update();
-				p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
-				return true;
-			} catch(Exception e) {
-				e.printStackTrace();
-				p.sendMessage(plugin.getPrefix() + "§4Ein Fehler ist aufgetreten!");
-				return false;
-			}
+			FreeShopInfo finfo = new FreeShopInfo(rank, delay);
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINFREE, null, hand, null, desc.toString(), finfo, plot.getOwner());
+			plugin.update(sign, info);
+			List<String> lines = plugin.getSignLines();
+			sign.getSide(Side.FRONT).setLine(0, getFreeShopSignText(lines.get(0), desc.toString(), rank));
+			sign.getSide(Side.FRONT).setLine(1, getFreeShopSignText(lines.get(1), desc.toString(), rank));
+			sign.getSide(Side.FRONT).setLine(2, getFreeShopSignText(lines.get(2), desc.toString(), rank));
+			sign.getSide(Side.FRONT).setLine(3, getFreeShopSignText(lines.get(3), desc.toString(), rank));
+			sign.update();
+			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
+			return true;
 		}
 		p.sendMessage(plugin.getPrefix() + "§cUngültiger Befehl! §6/chestshop §cfür Hilfe!");
 		return false;
 	}
 
-    private String getSignText(String line, int id, String desc, String type, double price) {
-		line = line.replace("{ID}", Integer.toString(id));
+    private String getSignText(String line, String desc, String type, double price) {
 		line = line.replace("{Description}", desc);
 		line = line.replace("{Type}", type);
-		line = line.replace("{Price}", DecimalFormat.getNumberInstance(Locale.GERMAN).format(price) + economy);
+		line = line.replace("{Price}", DecimalFormat.getNumberInstance(Locale.GERMAN).format(price) + plugin.getEconomySuffix());
 		return line;
 	}
 
-	private String getFreeShopSignText(String line, int id, String desc, String rank) {
-		line = line.replace("{ID}", Integer.toString(id));
+	private String getFreeShopSignText(String line, String desc, String rank) {
 		line = line.replace("{Description}", desc);
 		line = line.replace("{Type}", "FREE");
 		line = line.replace("{Price}", rank);
@@ -818,12 +774,12 @@ public class ChestShopCommand implements CommandExecutor {
 		return b.getRelative(BlockFace.DOWN);
 	}
 
-	private boolean groupExist(String s) {
+	private String getGroupID(String s) {
 		Plugin luckperms = Bukkit.getPluginManager().getPlugin("LuckPerms");
 		if(luckperms != null) {
-			return LuckPermsAPI.groupExist(s);
+			return LuckPermsAPI.getGroupID(s);
 		}
-		return false;
+		return null;
 	}
 
 	public double round(double value) {

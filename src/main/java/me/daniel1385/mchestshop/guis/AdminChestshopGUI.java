@@ -5,10 +5,12 @@ import com.plotsquared.core.plot.Plot;
 import me.daniel1385.mchestshop.MChestShop;
 import me.daniel1385.mchestshop.apis.InventoryGUI;
 import me.daniel1385.mchestshop.apis.MoneyAPI;
-import me.daniel1385.mchestshop.apis.MySQL;
+import me.daniel1385.mchestshop.objects.ChestShopInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -16,53 +18,48 @@ import java.text.DecimalFormat;
 import java.util.Locale;
 
 public class AdminChestshopGUI extends InventoryGUI {
-	private String desc;
-	private MySQL mysql;
-	private ItemStack item;
-	private double price;
-	private boolean ankauf;
-	private int id;
-	private String owner;
-	private String economy;
-	private Location loc;
 	private MChestShop plugin;
+	private Location loc;
+	private ChestShopInfo info;
 	
-	public AdminChestshopGUI(int id, MySQL mysql, MChestShop plugin, String desc, ItemStack item, double price, boolean ankauf, String owner, String economy, Location loc) {
-		super(plugin, desc, 3);
-		this.id = id;
+	public AdminChestshopGUI(MChestShop plugin, Sign sign, ChestShopInfo info) {
+		super(plugin, info.getDescription(), 3);
 		this.plugin = plugin;
-		this.desc = desc;
-		this.mysql = mysql;
-		this.item = item;
-		this.price = price;
-		this.ankauf = ankauf;
-		this.owner = owner;
-		this.economy = economy;
-		this.loc = loc;
-		setItem(4, item);
-		if(ankauf) {
-			setItem(10, Material.RED_DYE, "§c" + item.getAmount() + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price) + economy);
-			setItem(11, 2, Material.RED_DYE, "§c" + item.getAmount()*2 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 2) + economy);
-			setItem(12, 4, Material.RED_DYE, "§c" + item.getAmount()*4 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 4) + economy);
-			setItem(13, 8, Material.RED_DYE, "§c" + item.getAmount()*8 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 8) + economy);
-			setItem(14, 16, Material.RED_DYE, "§c" + item.getAmount()*16 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 16) + economy);
-			setItem(15, 32, Material.RED_DYE, "§c" + item.getAmount()*32 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 32) + economy);
-			setItem(16, 64, Material.RED_DYE, "§c" + item.getAmount()*64 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 64) + economy);
-			setItem(22, Material.CHEST, "§cMaximale Anzahl verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price) + economy + " je " + (item.getAmount() != 1 ? item.getAmount() + "er-Stack" : "Stück"));
+		this.loc = sign.getLocation();
+		this.info = info;
+		setItem(4, info.getItem());
+		if(info.isSellShop()) {
+			setItem(10, Material.RED_DYE, "§c" + info.getItem().getAmount() + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice()) + plugin.getEconomySuffix());
+			setItem(11, 2, Material.RED_DYE, "§c" + info.getItem().getAmount()*2 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 2) + plugin.getEconomySuffix());
+			setItem(12, 4, Material.RED_DYE, "§c" + info.getItem().getAmount()*4 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 4) + plugin.getEconomySuffix());
+			setItem(13, 8, Material.RED_DYE, "§c" + info.getItem().getAmount()*8 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 8) + plugin.getEconomySuffix());
+			setItem(14, 16, Material.RED_DYE, "§c" + info.getItem().getAmount()*16 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 16) + plugin.getEconomySuffix());
+			setItem(15, 32, Material.RED_DYE, "§c" + info.getItem().getAmount()*32 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 32) + plugin.getEconomySuffix());
+			setItem(16, 64, Material.RED_DYE, "§c" + info.getItem().getAmount()*64 + " verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 64) + plugin.getEconomySuffix());
+			setItem(22, Material.CHEST, "§cMaximale Anzahl verkaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice()) + plugin.getEconomySuffix() + " je " + (info.getItem().getAmount() != 1 ? info.getItem().getAmount() + "er-Stack" : "Stück"));
 		} else {
-			setItem(10, Material.LIME_DYE, "§a" + item.getAmount() + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price) + economy);
-			setItem(11, 2, Material.LIME_DYE, "§a" + item.getAmount()*2 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 2) + economy);
-			setItem(12, 4, Material.LIME_DYE, "§a" + item.getAmount()*4 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 4) + economy);
-			setItem(13, 8, Material.LIME_DYE, "§a" + item.getAmount()*8 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 8) + economy);
-			setItem(14, 16, Material.LIME_DYE, "§a" + item.getAmount()*16 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 16) + economy);
-			setItem(15, 32, Material.LIME_DYE, "§a" + item.getAmount()*32 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 32) + economy);
-			setItem(16, 64, Material.LIME_DYE, "§a" + item.getAmount()*64 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price * 64) + economy);
-			setItem(22, Material.CHEST, "§aMaximale Anzahl kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(price) + economy + " je " + (item.getAmount() != 1 ? item.getAmount() + "er-Stack" : "Stück"));
+			setItem(10, Material.LIME_DYE, "§a" + info.getItem().getAmount() + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice()) + plugin.getEconomySuffix());
+			setItem(11, 2, Material.LIME_DYE, "§a" + info.getItem().getAmount()*2 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 2) + plugin.getEconomySuffix());
+			setItem(12, 4, Material.LIME_DYE, "§a" + info.getItem().getAmount()*4 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 4) + plugin.getEconomySuffix());
+			setItem(13, 8, Material.LIME_DYE, "§a" + info.getItem().getAmount()*8 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 8) + plugin.getEconomySuffix());
+			setItem(14, 16, Material.LIME_DYE, "§a" + info.getItem().getAmount()*16 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 16) + plugin.getEconomySuffix());
+			setItem(15, 32, Material.LIME_DYE, "§a" + info.getItem().getAmount()*32 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 32) + plugin.getEconomySuffix());
+			setItem(16, 64, Material.LIME_DYE, "§a" + info.getItem().getAmount()*64 + " kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice() * 64) + plugin.getEconomySuffix());
+			setItem(22, Material.CHEST, "§aMaximale Anzahl kaufen", "§7" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice()) + plugin.getEconomySuffix() + " je " + (info.getItem().getAmount() != 1 ? info.getItem().getAmount() + "er-Stack" : "Stück"));
 		}
 	}
 
 	@Override
 	public void click(Player paramPlayer, int paramInt, boolean paramBoolean) {
+		Block block = loc.getBlock();
+		if (!(block.getState() instanceof Sign sign)) {
+			paramPlayer.closeInventory();
+			return;
+		}
+		if(!plugin.getChestShopInfo(sign).equals(info)) {
+			paramPlayer.closeInventory();
+			return;
+		}
 		Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
 		if(plot == null) {
 			paramPlayer.closeInventory();
@@ -72,7 +69,7 @@ public class AdminChestshopGUI extends InventoryGUI {
 			paramPlayer.closeInventory();
 			return;
 		}
-		if(!plot.getOwner().toString().equals(owner)) {
+		if(!plot.getOwner().equals(info.getOwner())) {
 			paramPlayer.closeInventory();
 			return;
 		}
@@ -92,11 +89,11 @@ public class AdminChestshopGUI extends InventoryGUI {
 		} else if(paramInt == 16) {
 			anzahl = 64;
 		} else if(paramInt == 22) {
-			if(!ankauf) {
+			if(info.isBuyShop()) {
 				double kontostand = MoneyAPI.get(paramPlayer.getUniqueId());
-				int geld = (int) (kontostand / price);
-				int platz = checkInvSpace(item, paramPlayer.getInventory().getStorageContents());
-				platz = platz/item.getAmount();
+				int geld = (int) (kontostand / info.getPrice());
+				int platz = checkInvSpace(info.getItem(), paramPlayer.getInventory().getStorageContents());
+				platz = platz/info.getItem().getAmount();
 				anzahl = geld;
 				if(platz < anzahl) {
 					anzahl = platz;
@@ -105,8 +102,8 @@ public class AdminChestshopGUI extends InventoryGUI {
 					anzahl = 1;
 				}
 			} else {
-				int items = checkInvItems(item, paramPlayer.getInventory().getStorageContents());
-				items = items/item.getAmount();
+				int items = checkInvItems(info.getItem(), paramPlayer.getInventory().getStorageContents());
+				items = items/info.getItem().getAmount();
 				anzahl = items;
 				if(anzahl == 0) {
 					anzahl = 1;
@@ -115,31 +112,31 @@ public class AdminChestshopGUI extends InventoryGUI {
 		} else {
 			return;
 		}
-		if(!ankauf) {
-			if(checkInvSpace(item, paramPlayer.getInventory().getStorageContents()) < (anzahl*item.getAmount())) {
+		if(info.isBuyShop()) {
+			if(checkInvSpace(info.getItem(), paramPlayer.getInventory().getStorageContents()) < (anzahl*info.getItem().getAmount())) {
 				paramPlayer.sendMessage(plugin.getPrefix() + "§cDein Inventar ist voll!");
 				return;
 			}
-			double betrag = price * anzahl;
-			if(!MoneyAPI.removeMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ") " + anzahl + "x")) {
+			double betrag = info.getPrice() * anzahl;
+			if(!MoneyAPI.removeMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung (" + info.getDescription() + ") " + anzahl + "x")) {
 				paramPlayer.sendMessage(plugin.getPrefix() + "§cDu hast nicht genug Geld!");
 				return;
 			}
 			for(int i = 0; i < anzahl; i++) {
-				paramPlayer.getInventory().addItem(new ItemStack(item));
+				paramPlayer.getInventory().addItem(new ItemStack(info.getItem()));
 			}
-			Bukkit.broadcast(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*item.getAmount() + " Stück §7von §6" + desc + " §7gekauft (§a+" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + economy + "§7).", "chestshop.admin");
+			Bukkit.broadcast(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*info.getItem().getAmount() + " Stück §7von §6" + info.getDescription() + " §7gekauft (§a+" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + plugin.getEconomySuffix() + "§7).", "chestshop.admin");
 		} else {
-			if(checkInvItems(item, paramPlayer.getInventory().getStorageContents()) < (anzahl*item.getAmount())) {
+			if(checkInvItems(info.getItem(), paramPlayer.getInventory().getStorageContents()) < (anzahl*info.getItem().getAmount())) {
 				paramPlayer.sendMessage(plugin.getPrefix() + "§cDu hast nicht genügend Items!");
 				return;
 			}
-			int entfernen = anzahl*item.getAmount();
+			int entfernen = anzahl*info.getItem().getAmount();
 			for(ItemStack item : paramPlayer.getInventory().getStorageContents()) {
 				if(item == null) {
 					continue;
 				}
-				if(item.isSimilar(this.item)) {
+				if(item.isSimilar(info.getItem())) {
 					if(item.getAmount() < entfernen) {
 						entfernen -= item.getAmount();
 						item.setAmount(0);
@@ -151,9 +148,9 @@ public class AdminChestshopGUI extends InventoryGUI {
 					}
 				}
 			}
-			double betrag = price * anzahl;
-			MoneyAPI.addMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung #" + id + " (" + desc + ") " + anzahl + "x");
-			Bukkit.broadcast(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*item.getAmount() + " Stück §7von §6" + desc + " §7verkauft (§c-" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + economy + "§7).", "chestshop.admin");
+			double betrag = info.getPrice() * anzahl;
+			MoneyAPI.addMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung (" + info.getDescription() + ") " + anzahl + "x");
+			Bukkit.broadcast(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*info.getItem().getAmount() + " Stück §7von §6" + info.getDescription() + " §7verkauft (§c-" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + plugin.getEconomySuffix() + "§7).", "chestshop.admin");
 		}
 	}
 	

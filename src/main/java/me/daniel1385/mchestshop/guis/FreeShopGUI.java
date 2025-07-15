@@ -6,43 +6,36 @@ import me.daniel1385.mchestshop.MChestShop;
 import me.daniel1385.mchestshop.apis.ContainerAPI;
 import me.daniel1385.mchestshop.apis.InventoryGUI;
 import me.daniel1385.mchestshop.apis.LuckPermsAPI;
-import me.daniel1385.mchestshop.apis.MySQL;
+import me.daniel1385.mchestshop.objects.ChestShopInfo;
+import me.daniel1385.mchestshop.objects.FreeShopInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Barrel;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
-import java.sql.SQLException;
+import java.util.Map;
 import java.util.UUID;
 
 public class FreeShopGUI extends InventoryGUI {
-	private String desc;
-	private MySQL mysql;
-	private ItemStack item;
-	private Location chestLoc;
-	private String owner;
-	private int id;
 	private MChestShop plugin;
 	private Location loc;
-	private String rank;
+	private ChestShopInfo info;
 
-	public FreeShopGUI(int id, MySQL mysql, MChestShop plugin, String desc, ItemStack item, Location chestLoc, String owner, boolean haspermission, long rest, String rank, int delay, Location loc) {
-		super(plugin, desc, 3);
-		this.id = id;
-		this.desc = desc;
-		this.mysql = mysql;
-		this.item = item;
-		this.chestLoc = chestLoc;
-		this.owner = owner;
+	public FreeShopGUI(MChestShop plugin, Sign sign, ChestShopInfo info, Player p) {
+		super(plugin, info.getDescription(), 3);
 		this.plugin = plugin;
-		this.loc = loc;
-		this.rank = rank;
-		setItem(4, item);
-		if(!haspermission) {
+		this.loc = sign.getLocation();
+		this.info = info;
+		setItem(4, info.getItem());
+		if(!isInGroup(p, info.getFreeShopInfo().getRank())) {
 			setItem(4+9, Material.RED_STAINED_GLASS_PANE, "§cKeine Berechtigung!");
 		} else {
+			long rest = plugin.getFreeShopRestTime(sign, p.getUniqueId());
 			if(rest == 0) {
 				setItem(4+9, Material.LIME_STAINED_GLASS_PANE, "§aJetzt abholen!");
 			} else if(rest < 0) {
@@ -51,11 +44,12 @@ public class FreeShopGUI extends InventoryGUI {
 				setItem(4+9, Material.YELLOW_STAINED_GLASS_PANE, "§eAbholbar in:", "§7" + dauer(rest));
 			}
 		}
-		String display = getDisplayNameOfGroup(rank);
+		String display = getDisplayNameOfGroup(info.getFreeShopInfo().getRank());
 		if(display == null) {
-			display = rank;
+			display = info.getFreeShopInfo().getRank();
 		}
 		String dauer;
+		int delay = info.getFreeShopInfo().getDelay();
 		if(delay < 0) {
 			dauer = "Einmalig";
 		} else if(delay == 0) {
@@ -68,72 +62,76 @@ public class FreeShopGUI extends InventoryGUI {
 
 	@Override
 	public void click(Player paramPlayer, int paramInt, boolean paramBoolean) {
-		try {
-			Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-			if(plot == null) {
-				paramPlayer.closeInventory();
-				return;
-			}
-			if(plot.getOwner() == null) {
-				paramPlayer.closeInventory();
-				return;
-			}
-			if(!plot.getOwner().toString().equals(owner)) {
-				paramPlayer.closeInventory();
-				return;
-			}
-			if(paramInt == 4+9) {
-				if(!isInGroup(paramPlayer, rank)) {
-					setItem(4+9, Material.RED_STAINED_GLASS_PANE, "§cKeine Berechtigung!");
-					return;
-				}
-				long rest = mysql.getRestTime(paramPlayer.getUniqueId(), id);
-				if(rest != 0) {
-					if(rest > 0) {
-						setItem(4+9, Material.YELLOW_STAINED_GLASS_PANE, "§eAbholbar in:", "§7" + dauer(rest));
-					} else {
-						setItem(4+9, Material.ORANGE_STAINED_GLASS_PANE, "§6Bereits abgeholt!");
-					}
-					return;
-				}
-				if(checkInvSpace(item, paramPlayer.getInventory().getStorageContents()) < (item.getAmount())) {
-					paramPlayer.sendMessage(plugin.getPrefix() + "§cDein Inventar ist voll!");
-					setItem(4+9, Material.LIME_STAINED_GLASS_PANE, "§aJetzt abholen!");
-					return;
-				}
-				int entfernen = item.getAmount();
-				if(chestLoc != null) { // Kein AdminShop
-					if(ContainerAPI.getAmount(chestLoc, new ItemStack(item)) < entfernen) {
-						paramPlayer.sendMessage(plugin.getPrefix() + "§cDer Behälter ist leer!");
-						setItem(4+9, Material.LIME_STAINED_GLASS_PANE, "§aJetzt abholen!");
-						return;
-					}
-				}
-				rest = mysql.useFreeShop(paramPlayer.getUniqueId(), id);
-				if(chestLoc != null) { // Kein AdminShop
-					ContainerAPI.removeItems(chestLoc, new ItemStack(item), entfernen);
-				}
-				if(rest == 0) {
-					setItem(4+9, Material.LIME_STAINED_GLASS_PANE, "§aJetzt abholen!");
-				} else if(rest < 0) {
-					setItem(4+9, Material.ORANGE_STAINED_GLASS_PANE, "§6Bereits abgeholt!");
-				} else {
-					setItem(4+9, Material.YELLOW_STAINED_GLASS_PANE, "§eAbholbar in:", "§7" + dauer(rest*1000L));
-				}
-				paramPlayer.getInventory().addItem(new ItemStack(item));
-				if(chestLoc != null) { // Kein AdminShop
-					Player powner = Bukkit.getPlayer(UUID.fromString(owner));
-					if(powner != null) {
-						powner.sendMessage(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + item.getAmount() + " Stück §7von §6" + desc + " §7abgeholt.");
-					}
-				} else {
-					Bukkit.broadcast(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + item.getAmount() + " Stück §7von §6" + desc + " §7abgeholt.", "chestshop.admin");
-				}
-			}
-		} catch(SQLException e) {
-			e.printStackTrace();
-			paramPlayer.sendMessage(plugin.getPrefix() + "§4Ein Fehler ist aufgetreten!");
+		Block block = loc.getBlock();
+		if (!(block.getState() instanceof Sign sign)) {
+			paramPlayer.closeInventory();
 			return;
+		}
+		if(!plugin.getChestShopInfo(sign).equals(info)) {
+			paramPlayer.closeInventory();
+			return;
+		}
+		Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
+		if(plot == null) {
+			paramPlayer.closeInventory();
+			return;
+		}
+		if(plot.getOwner() == null) {
+			paramPlayer.closeInventory();
+			return;
+		}
+		if(!plot.getOwner().equals(info.getOwner())) {
+			paramPlayer.closeInventory();
+			return;
+		}
+		if(paramInt == 4+9) {
+			if(!isInGroup(paramPlayer, info.getFreeShopInfo().getRank())) {
+				setItem(4+9, Material.RED_STAINED_GLASS_PANE, "§cKeine Berechtigung!");
+				return;
+			}
+			long rest = plugin.getFreeShopRestTime(sign, paramPlayer.getUniqueId());
+			if(rest != 0) {
+				if(rest > 0) {
+					setItem(4+9, Material.YELLOW_STAINED_GLASS_PANE, "§eAbholbar in:", "§7" + dauer(rest));
+				} else {
+					setItem(4+9, Material.ORANGE_STAINED_GLASS_PANE, "§6Bereits abgeholt!");
+				}
+				return;
+			}
+			if(checkInvSpace(info.getItem(), paramPlayer.getInventory().getStorageContents()) < (info.getItem().getAmount())) {
+				paramPlayer.sendMessage(plugin.getPrefix() + "§cDein Inventar ist voll!");
+				setItem(4+9, Material.LIME_STAINED_GLASS_PANE, "§aJetzt abholen!");
+				return;
+			}
+			int entfernen = info.getItem().getAmount();
+			if(info.getChestLocation() != null) { // Kein AdminShop
+				if(ContainerAPI.getAmount(info.getChestLocation(), new ItemStack(info.getItem())) < entfernen) {
+					paramPlayer.sendMessage(plugin.getPrefix() + "§cDer Behälter ist leer!");
+					setItem(4+9, Material.LIME_STAINED_GLASS_PANE, "§aJetzt abholen!");
+					return;
+				}
+			}
+			plugin.useFreeShop(sign, paramPlayer.getUniqueId());
+			rest = info.getFreeShopInfo().getDelay();
+			if(!info.isAdminShop()) {
+				ContainerAPI.removeItems(info.getChestLocation(), new ItemStack(info.getItem()), entfernen);
+			}
+			if(rest == 0) {
+				setItem(4+9, Material.LIME_STAINED_GLASS_PANE, "§aJetzt abholen!");
+			} else if(rest < 0) {
+				setItem(4+9, Material.ORANGE_STAINED_GLASS_PANE, "§6Bereits abgeholt!");
+			} else {
+				setItem(4+9, Material.YELLOW_STAINED_GLASS_PANE, "§eAbholbar in:", "§7" + dauer(rest*1000L));
+			}
+			paramPlayer.getInventory().addItem(new ItemStack(info.getItem()));
+			if(!info.isAdminShop()) {
+				Player powner = Bukkit.getPlayer(info.getOwner());
+				if(powner != null) {
+					powner.sendMessage(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + info.getItem().getAmount() + " Stück §7von §6" + info.getDescription() + " §7abgeholt.");
+				}
+			} else {
+				Bukkit.broadcast(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + info.getItem().getAmount() + " Stück §7von §6" + info.getDescription() + " §7abgeholt.", "chestshop.admin");
+			}
 		}
 	}
 
