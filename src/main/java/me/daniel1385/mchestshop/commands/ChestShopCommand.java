@@ -1,9 +1,8 @@
 package me.daniel1385.mchestshop.commands;
 
-import com.plotsquared.bukkit.util.BukkitUtil;
-import com.plotsquared.core.plot.Plot;
 import me.daniel1385.mchestshop.MChestShop;
 import me.daniel1385.mchestshop.apis.LuckPermsAPI;
+import me.daniel1385.mchestshop.apis.RegionsAPI;
 import me.daniel1385.mchestshop.objects.ChestShopInfo;
 import me.daniel1385.mchestshop.objects.ChestShopType;
 import me.daniel1385.mchestshop.objects.FreeShopInfo;
@@ -29,6 +28,7 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 public class ChestShopCommand implements CommandExecutor {
 	private MChestShop plugin;
@@ -167,16 +167,12 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			Sign sign = (Sign) block.getState();
 			Location loc = block.getLocation();
-			Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-			if(plot == null) {
+			UUID owner = RegionsAPI.getPlotOwner(loc);
+			if(owner == null) {
 				p.sendMessage(plugin.getPrefix() + "§cShops dürfen nur auf Plots erstellt werden!");
 				return false;
 			}
-			if(plot.getOwner() == null) {
-				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
-				return false;
-			}
-			if(!plot.getOwner().equals(p.getUniqueId())) {
+			if(!owner.equals(p.getUniqueId())) {
 				if(!p.hasPermission("chestshop.admin")) {
 					p.sendMessage(plugin.getPrefix() + "§cDas ist nicht dein Grundstück!");
 					return false;
@@ -192,12 +188,12 @@ public class ChestShopCommand implements CommandExecutor {
 				return false;
 			}
 			hand = new ItemStack(hand);
-			Location cloc = getContainerAttached(loc, plot);
+			Location cloc = getContainerAttached(loc);
 			if(cloc == null) {
 				p.sendMessage(plugin.getPrefix() + "§cEs ist keine Truhe an dem Schild!");
 				return false;
 			}
-			ChestShopInfo info = new ChestShopInfo(ChestShopType.BUY, cloc, hand, betrag, desc.toString(), null, plot.getOwner());
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.BUY, cloc, hand, betrag, desc.toString(), null, owner);
 			plugin.update(sign, info);
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
@@ -241,16 +237,12 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			Sign sign = (Sign) block.getState();
 			Location loc = block.getLocation();
-			Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-			if(plot == null) {
+			UUID owner = RegionsAPI.getPlotOwner(loc);
+			if(owner == null) {
 				p.sendMessage(plugin.getPrefix() + "§cShops dürfen nur auf Plots erstellt werden!");
 				return false;
 			}
-			if(plot.getOwner() == null) {
-				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
-				return false;
-			}
-			if(!plot.getOwner().equals(p.getUniqueId())) {
+			if(!owner.equals(p.getUniqueId())) {
 				if(!p.hasPermission("chestshop.admin")) {
 					p.sendMessage(plugin.getPrefix() + "§cDas ist nicht dein Grundstück!");
 					return false;
@@ -266,12 +258,12 @@ public class ChestShopCommand implements CommandExecutor {
 				return false;
 			}
 			hand = new ItemStack(hand);
-			Location cloc = getContainerAttached(loc, plot);
+			Location cloc = getContainerAttached(loc);
 			if(cloc == null) {
 				p.sendMessage(plugin.getPrefix() + "§cEs ist keine Truhe an dem Schild!");
 				return false;
 			}
-			ChestShopInfo info = new ChestShopInfo(ChestShopType.SELL, cloc, hand, betrag, desc.toString(), null, plot.getOwner());
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.SELL, cloc, hand, betrag, desc.toString(), null, owner);
 			plugin.update(sign, info);
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
@@ -358,16 +350,12 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			Sign sign = (Sign) block.getState();
 			Location loc = block.getLocation();
-			Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-			if(plot == null) {
+			UUID owner = RegionsAPI.getPlotOwner(loc);
+			if(owner == null) {
 				p.sendMessage(plugin.getPrefix() + "§cShops dürfen nur auf Plots erstellt werden!");
 				return false;
 			}
-			if(plot.getOwner() == null) {
-				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
-				return false;
-			}
-			if(!plot.getOwner().equals(p.getUniqueId())) {
+			if(!owner.equals(p.getUniqueId())) {
 				if(!p.hasPermission("chestshop.admin")) {
 					p.sendMessage(plugin.getPrefix() + "§cDas ist nicht dein Grundstück!");
 					return false;
@@ -383,13 +371,13 @@ public class ChestShopCommand implements CommandExecutor {
 				return false;
 			}
 			hand = new ItemStack(hand);
-			Location cloc = getContainerAttached(loc, plot);
+			Location cloc = getContainerAttached(loc);
 			if(cloc == null) {
 				p.sendMessage(plugin.getPrefix() + "§cEs ist keine Truhe an dem Schild!");
 				return false;
 			}
 			FreeShopInfo finfo = new FreeShopInfo(rank, delay);
-			ChestShopInfo info = new ChestShopInfo(ChestShopType.FREE, cloc, hand, null, desc.toString(), finfo, plot.getOwner());
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.FREE, cloc, hand, null, desc.toString(), finfo, owner);
 			plugin.update(sign, info);
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
@@ -433,13 +421,9 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			Sign sign = (Sign) block.getState();
 			Location loc = block.getLocation();
-			Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-			if(plot == null) {
+			UUID owner = RegionsAPI.getPlotOwner(loc);
+			if(owner == null) {
 				p.sendMessage(plugin.getPrefix() + "§cShops dürfen nur auf Plots erstellt werden!");
-				return false;
-			}
-			if(plot.getOwner() == null) {
-				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
 				return false;
 			}
 			ItemStack hand = p.getInventory().getItemInMainHand();
@@ -452,7 +436,7 @@ public class ChestShopCommand implements CommandExecutor {
 				return false;
 			}
 			hand = new ItemStack(hand);
-			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINBUY, null, hand, betrag, desc.toString(), null, plot.getOwner());
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINBUY, null, hand, betrag, desc.toString(), null, owner);
 			plugin.update(sign, info);
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
@@ -496,13 +480,9 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			Sign sign = (Sign) block.getState();
 			Location loc = block.getLocation();
-			Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-			if(plot == null) {
+			UUID owner = RegionsAPI.getPlotOwner(loc);
+			if(owner == null) {
 				p.sendMessage(plugin.getPrefix() + "§cShops dürfen nur auf Plots erstellt werden!");
-				return false;
-			}
-			if(plot.getOwner() == null) {
-				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
 				return false;
 			}
 			ItemStack hand = p.getInventory().getItemInMainHand();
@@ -515,7 +495,7 @@ public class ChestShopCommand implements CommandExecutor {
 				return false;
 			}
 			hand = new ItemStack(hand);
-			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINSELL, null, hand, betrag, desc.toString(), null, plot.getOwner());
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINSELL, null, hand, betrag, desc.toString(), null, owner);
 			plugin.update(sign, info);
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
@@ -559,22 +539,18 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			Sign sign = (Sign) block.getState();
 			Location loc = block.getLocation();
-			Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-			if(plot == null) {
+			UUID owner = RegionsAPI.getPlotOwner(loc);
+			if(owner == null) {
 				p.sendMessage(plugin.getPrefix() + "§cShops dürfen nur auf Plots erstellt werden!");
 				return false;
 			}
-			if(plot.getOwner() == null) {
-				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
-				return false;
-			}
-			if(!plot.getOwner().equals(p.getUniqueId())) {
+			if(!owner.equals(p.getUniqueId())) {
 				if(!p.hasPermission("chestshop.admin")) {
-					p.sendMessage("§cDas ist nicht dein Grundstück!");
+					p.sendMessage(plugin.getPrefix() + "§cDas ist nicht dein Grundstück!");
 					return false;
 				}
 			}
-			ChestShopInfo info = new ChestShopInfo(ChestShopType.PLOT, null, null, betrag, desc.toString(), null, plot.getOwner());
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.PLOT, null, null, betrag, desc.toString(), null, owner);
 			plugin.update(sign, info);
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
@@ -661,13 +637,9 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			Sign sign = (Sign) block.getState();
 			Location loc = block.getLocation();
-			Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-			if(plot == null) {
+			UUID owner = RegionsAPI.getPlotOwner(loc);
+			if(owner == null) {
 				p.sendMessage(plugin.getPrefix() + "§cShops dürfen nur auf Plots erstellt werden!");
-				return false;
-			}
-			if(plot.getOwner() == null) {
-				p.sendMessage(plugin.getPrefix() + "§cDas Grundstück hat keinen Besitzer!");
 				return false;
 			}
 			ItemStack hand = p.getInventory().getItemInMainHand();
@@ -681,7 +653,7 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			hand = new ItemStack(hand);
 			FreeShopInfo finfo = new FreeShopInfo(rank, delay);
-			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINFREE, null, hand, null, desc.toString(), finfo, plot.getOwner());
+			ChestShopInfo info = new ChestShopInfo(ChestShopType.ADMINFREE, null, hand, null, desc.toString(), finfo, owner);
 			plugin.update(sign, info);
 			p.sendMessage(plugin.getPrefix() + "§aDein Shop wurde erstellt!");
 			return true;
@@ -690,7 +662,7 @@ public class ChestShopCommand implements CommandExecutor {
 		return false;
 	}
 
-	private Location getContainerAttached(Location loc, Plot plot) {
+	private Location getContainerAttached(Location loc) {
 		Block block = getAttached(loc.getBlock());
 		if(block == null) {
 			return null;
@@ -698,14 +670,11 @@ public class ChestShopCommand implements CommandExecutor {
 		if(!(block.getState() instanceof Container)) {
 			return null;
 		}
-		Plot plot2 = Plot.getPlot(BukkitUtil.adapt(block.getLocation()));
-		if(plot2 == null) {
+		if(RegionsAPI.isSamePlot(loc, block.getLocation())) {
+			return block.getLocation();
+		} else {
 			return null;
 		}
-		if(!plot2.equals(plot)) {
-			return null;
-		}
-		return block.getLocation();
 	}
 
 	private Block getAttached(Block b) {

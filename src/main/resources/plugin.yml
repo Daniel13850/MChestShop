@@ -3,7 +3,7 @@ main: me.daniel1385.mchestshop.MChestShop
 author: Daniel1385
 version: ${project.version}
 api-version: '1.20'
-depend: [PlotSquared, Vault]
+depend: [Vault]
 commands:
   chestshop:
     aliases: [csh]

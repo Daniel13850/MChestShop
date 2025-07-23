@@ -1,10 +1,9 @@
 package me.daniel1385.mchestshop.guis;
 
-import com.plotsquared.bukkit.util.BukkitUtil;
-import com.plotsquared.core.plot.Plot;
 import me.daniel1385.mchestshop.MChestShop;
 import me.daniel1385.mchestshop.apis.InventoryGUI;
 import me.daniel1385.mchestshop.apis.MoneyAPI;
+import me.daniel1385.mchestshop.apis.RegionsAPI;
 import me.daniel1385.mchestshop.objects.ChestShopInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -16,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.text.DecimalFormat;
 import java.util.Locale;
+import java.util.UUID;
 
 public class AdminChestshopGUI extends InventoryGUI {
 	private MChestShop plugin;
@@ -60,16 +60,12 @@ public class AdminChestshopGUI extends InventoryGUI {
 			paramPlayer.closeInventory();
 			return;
 		}
-		Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-		if(plot == null) {
+		UUID powner = RegionsAPI.getPlotOwner(loc);
+		if(powner == null) {
 			paramPlayer.closeInventory();
 			return;
 		}
-		if(plot.getOwner() == null) {
-			paramPlayer.closeInventory();
-			return;
-		}
-		if(!plot.getOwner().equals(info.getOwner())) {
+		if(!powner.equals(info.getOwner())) {
 			paramPlayer.closeInventory();
 			return;
 		}

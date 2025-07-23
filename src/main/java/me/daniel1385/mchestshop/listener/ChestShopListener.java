@@ -1,9 +1,8 @@
 package me.daniel1385.mchestshop.listener;
 
-import com.plotsquared.bukkit.util.BukkitUtil;
-import com.plotsquared.core.plot.Plot;
 import me.daniel1385.mchestshop.MChestShop;
 import me.daniel1385.mchestshop.apis.LuckPermsAPI;
+import me.daniel1385.mchestshop.apis.RegionsAPI;
 import me.daniel1385.mchestshop.guis.AdminChestshopGUI;
 import me.daniel1385.mchestshop.guis.ChestShopGUI;
 import me.daniel1385.mchestshop.guis.FreeShopGUI;
@@ -22,6 +21,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+
+import java.util.UUID;
 
 public class ChestShopListener implements Listener {
 	private MChestShop plugin;
@@ -49,27 +50,24 @@ public class ChestShopListener implements Listener {
 		}
 		event.setCancelled(true);
 		Location loc = sign.getLocation();
-		Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-		if(plot == null) {
+		UUID powner = RegionsAPI.getPlotOwner(loc);
+		if(powner == null) {
 			return;
 		}
-		if(plot.getOwner() == null) {
-			return;
-		}
-		if(!plot.getOwner().equals(info.getOwner())) {
+		if(!powner.equals(info.getOwner())) {
 			event.getPlayer().sendMessage(plugin.getPrefix() + "§cShops müssen nach einem Besitzerwechsel erneut erstellt werden.");
 			return;
 		}
-		String desc = info.getDescription();
-		String owner = info.getOwner().toString();
 		if(info.isPlotShop()) {
-			double price = info.getPrice();
-			new PlotChestShopGUI(plugin, sign, info).open(event.getPlayer());
+			Plugin ps2 = Bukkit.getPluginManager().getPlugin("PlotSquared");
+			if(ps2 != null) {
+				new PlotChestShopGUI(plugin, sign, info).open(event.getPlayer());
+			} else {
+				event.getPlayer().sendMessage(plugin.getPrefix() + "§cDiese Art von Shops wird hier nicht unterstützt!");
+			}
 			return;
 		}
-		ItemStack item = info.getItem();
 		if(info.isAdminShop() && (info.isBuyShop() || info.isSellShop())) {
-			double price = info.getPrice();
 			new AdminChestshopGUI(plugin, sign, info).open(event.getPlayer());
 			return;
 		}
@@ -82,12 +80,7 @@ public class ChestShopListener implements Listener {
 			new FreeShopGUI(plugin, sign, info, event.getPlayer()).open(event.getPlayer());
 			return;
 		}
-		Location chestLoc = info.getChestLocation();
-		Plot chestPlot = Plot.getPlot(BukkitUtil.adapt(chestLoc));
-		if(chestPlot == null) {
-			return;
-		}
-		if(!chestPlot.equals(plot)) {
+		if(!RegionsAPI.isSamePlot(loc, info.getChestLocation())) {
 			return;
 		}
 		if(info.isFreeShop()) {
@@ -99,7 +92,6 @@ public class ChestShopListener implements Listener {
 			new FreeShopGUI(plugin, sign, info, event.getPlayer()).open(event.getPlayer());
 			return;
 		}
-		double price = info.getPrice();
 		new ChestShopGUI(plugin, sign, info).open(event.getPlayer());
 	}
 

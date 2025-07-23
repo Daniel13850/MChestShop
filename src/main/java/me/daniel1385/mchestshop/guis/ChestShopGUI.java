@@ -1,11 +1,10 @@
 package me.daniel1385.mchestshop.guis;
 
-import com.plotsquared.bukkit.util.BukkitUtil;
-import com.plotsquared.core.plot.Plot;
 import me.daniel1385.mchestshop.MChestShop;
 import me.daniel1385.mchestshop.apis.ContainerAPI;
 import me.daniel1385.mchestshop.apis.InventoryGUI;
 import me.daniel1385.mchestshop.apis.MoneyAPI;
+import me.daniel1385.mchestshop.apis.RegionsAPI;
 import me.daniel1385.mchestshop.objects.ChestShopInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -62,16 +61,16 @@ public class ChestShopGUI extends InventoryGUI {
 			paramPlayer.closeInventory();
 			return;
 		}
-		Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-		if(plot == null) {
+		UUID powner = RegionsAPI.getPlotOwner(loc);
+		if(powner == null) {
 			paramPlayer.closeInventory();
 			return;
 		}
-		if(plot.getOwner() == null) {
+		if(!powner.equals(info.getOwner())) {
 			paramPlayer.closeInventory();
 			return;
 		}
-		if(!plot.getOwner().equals(info.getOwner())) {
+		if(!RegionsAPI.isSamePlot(loc, info.getChestLocation())) {
 			paramPlayer.closeInventory();
 			return;
 		}
@@ -134,9 +133,9 @@ public class ChestShopGUI extends InventoryGUI {
 				paramPlayer.getInventory().addItem(neu);
 			}
 			MoneyAPI.addMoney(info.getOwner(), betrag, "Eigener ChestShop (" + info.getDescription() + ") " + anzahl + "x" + " (" + paramPlayer.getName() + ")");
-			Player powner = Bukkit.getPlayer(info.getOwner());
-			if(powner != null) {
-				powner.sendMessage(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*info.getItem().getAmount() + " Stück §7von §6" + info.getDescription() + " §7gekauft (§a+" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + plugin.getEconomySuffix() + "§7).");
+			Player owner = Bukkit.getPlayer(info.getOwner());
+			if(owner != null) {
+				owner.sendMessage(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*info.getItem().getAmount() + " Stück §7von §6" + info.getDescription() + " §7gekauft (§a+" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + plugin.getEconomySuffix() + "§7).");
 			}
 		} else {
 			if(checkInvItems(info.getItem(), paramPlayer.getInventory().getStorageContents()) < (anzahl*info.getItem().getAmount())) {
@@ -171,9 +170,9 @@ public class ChestShopGUI extends InventoryGUI {
 			}
 			ContainerAPI.addItems(info.getChestLocation(), new ItemStack(info.getItem()), entfernen);
 			MoneyAPI.addMoney(paramPlayer.getUniqueId(), betrag, "ChestShop Nutzung (" + info.getDescription() + ") " + anzahl + "x");
-			Player powner = Bukkit.getPlayer(info.getOwner());
-			if(powner != null) {
-				powner.sendMessage(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*info.getItem().getAmount() + " Stück §7von §6" + info.getDescription() + " §7verkauft (§c-" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + plugin.getEconomySuffix() + "§7).");
+			Player owner = Bukkit.getPlayer(info.getOwner());
+			if(owner != null) {
+				owner.sendMessage(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §e" + anzahl*info.getItem().getAmount() + " Stück §7von §6" + info.getDescription() + " §7verkauft (§c-" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(betrag) + plugin.getEconomySuffix() + "§7).");
 			}
 		}
 	}

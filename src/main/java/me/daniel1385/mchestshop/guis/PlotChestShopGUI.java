@@ -5,6 +5,7 @@ import com.plotsquared.core.plot.Plot;
 import me.daniel1385.mchestshop.MChestShop;
 import me.daniel1385.mchestshop.apis.InventoryGUI;
 import me.daniel1385.mchestshop.apis.MoneyAPI;
+import me.daniel1385.mchestshop.apis.RegionsAPI;
 import me.daniel1385.mchestshop.objects.ChestShopInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -41,22 +42,19 @@ public class PlotChestShopGUI extends InventoryGUI {
 			paramPlayer.closeInventory();
 			return;
 		}
-		Plot plot = Plot.getPlot(BukkitUtil.adapt(loc));
-		if(plot == null) {
+		UUID powner = RegionsAPI.getPlotOwner(loc);
+		if(powner == null) {
 			paramPlayer.closeInventory();
 			return;
 		}
-		if(plot.getOwner() == null) {
-			paramPlayer.closeInventory();
-			return;
-		}
-		if(!plot.getOwner().equals(info.getOwner())) {
+		if(!powner.equals(info.getOwner())) {
 			paramPlayer.closeInventory();
 			return;
 		}
 		if(paramInt != 13) {
 			return;
 		}
+		Plot plot = BukkitUtil.adapt(loc).getPlot();
 		int rest = BukkitUtil.adapt(paramPlayer).getAllowedPlots() - BukkitUtil.adapt(paramPlayer).getPlotCount();
 		if(rest < plot.getConnectedPlots().size()) {
 			paramPlayer.sendMessage(plugin.getPrefix() + "§cDu kannst keine weiteren Grundstücke besitzen!");
@@ -67,12 +65,12 @@ public class PlotChestShopGUI extends InventoryGUI {
 			return;
 		}
 		plot.setOwner(paramPlayer.getUniqueId());
-		Player powner = Bukkit.getPlayer(info.getOwner());
 		MoneyAPI.addMoney(info.getOwner(), info.getPrice(), "Eigener ChestShop (" + info.getDescription() + ") " + 1 + "x" + " (" + paramPlayer.getName() + ")");
 		paramPlayer.sendMessage(plugin.getPrefix() + "§aDas Grundstück gehört nun dir!");
 		paramPlayer.closeInventory();
-		if(powner != null) {
-			powner.sendMessage(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §6" + info.getDescription() + " §7gekauft (§a+" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice()) + plugin.getEconomySuffix() + "§7).");
+		Player owner = Bukkit.getPlayer(info.getOwner());
+		if(owner != null) {
+			owner.sendMessage(plugin.getPrefix() + "§9" + paramPlayer.getName() + " §7hat §6" + info.getDescription() + " §7gekauft (§a+" + DecimalFormat.getNumberInstance(Locale.GERMAN).format(info.getPrice()) + plugin.getEconomySuffix() + "§7).");
 		}
 	}
 
