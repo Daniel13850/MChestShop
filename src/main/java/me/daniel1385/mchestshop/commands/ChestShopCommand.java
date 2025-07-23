@@ -3,6 +3,7 @@ package me.daniel1385.mchestshop.commands;
 import me.daniel1385.mchestshop.MChestShop;
 import me.daniel1385.mchestshop.apis.LuckPermsAPI;
 import me.daniel1385.mchestshop.apis.RegionsAPI;
+import me.daniel1385.mchestshop.guis.PlotChestShopGUI;
 import me.daniel1385.mchestshop.objects.ChestShopInfo;
 import me.daniel1385.mchestshop.objects.ChestShopType;
 import me.daniel1385.mchestshop.objects.FreeShopInfo;
@@ -90,9 +91,12 @@ public class ChestShopCommand implements CommandExecutor {
 			}
 			if(seite == 2) {
 				p.sendMessage(plugin.getPrefix() + "§6§lChestShop Tutorial");
-				p.sendMessage("§aGrundstück verkaufen:");
-				p.sendMessage("§91. §dPlatziere ein Schild auf dem Grundstück und schaue es an.");
-				p.sendMessage("§92. §dGebe ein: §c/csh sellplot <Preis> <Beschreibung>");
+				Plugin ps2 = Bukkit.getPluginManager().getPlugin("PlotSquared");
+				if(ps2 != null) {
+					p.sendMessage("§aGrundstück verkaufen:");
+					p.sendMessage("§91. §dPlatziere ein Schild auf dem Grundstück und schaue es an.");
+					p.sendMessage("§92. §dGebe ein: §c/csh sellplot <Preis> <Beschreibung>");
+				}
 				p.sendMessage("§aItems verschenken:");
 				p.sendMessage("§91. §dPlatziere ein Schild an einer Truhe und schaue es an.");
 				p.sendMessage("§92. §dHalte das Item das du verschenken möchtest in der entsprechenden Anzahl in der Hand.");
@@ -501,6 +505,10 @@ public class ChestShopCommand implements CommandExecutor {
 			return true;
 		}
 		if(args[0].toLowerCase().equals("sellplot")) {
+			Plugin ps2 = Bukkit.getPluginManager().getPlugin("PlotSquared");
+			if(ps2 == null) {
+				p.sendMessage(plugin.getPrefix() + "§cDiese Art von Shops wird hier nicht unterstützt!");
+			}
 			if(args.length < 3) {
 				p.sendMessage(plugin.getPrefix() + "§cSyntax: §6/csh sellplot <Preis> <Beschreibung>");
 				return false;
