@@ -79,9 +79,11 @@ public class FreeShopGUI extends InventoryGUI {
 			paramPlayer.closeInventory();
 			return;
 		}
-		if(!RegionsAPI.isSamePlot(loc, info.getChestLocation())) {
-			paramPlayer.closeInventory();
-			return;
+		if(!info.isAdminShop()) {
+			if(!RegionsAPI.isSamePlot(loc, info.getChestLocation())) {
+				paramPlayer.closeInventory();
+				return;
+			}
 		}
 		if(paramInt == 4+9) {
 			if(!isInGroup(paramPlayer, info.getFreeShopInfo().getRank())) {
