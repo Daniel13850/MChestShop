@@ -508,6 +508,7 @@ public class ChestShopCommand implements CommandExecutor {
 			Plugin ps2 = Bukkit.getPluginManager().getPlugin("PlotSquared");
 			if(ps2 == null) {
 				p.sendMessage(plugin.getPrefix() + "§cDiese Art von Shops wird hier nicht unterstützt!");
+				return false;
 			}
 			if(args.length < 3) {
 				p.sendMessage(plugin.getPrefix() + "§cSyntax: §6/csh sellplot <Preis> <Beschreibung>");
